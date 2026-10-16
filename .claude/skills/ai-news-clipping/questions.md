@@ -7,6 +7,19 @@
 - 결과물: **HTML 파일**, **Linear 스타일** 디자인
 - 스킬 구성: **Role / Rubric / Context / Tools / Workflow / Guardrail**
 
+```
+스킬 만들어줘. 그 전에 질문에 대해서 따로 파일 만든 다음에 진행해줘.
+
+  뉴스 클리핑 스킬을 만들 예정이야.
+  어제 날짜를 기준으로 AI 뉴스 10개를 뽑아주면 좋겠어.
+  TopTier 저널에서만, 이코노미스트, 뉴욕 타임즈
+
+  html 파일로 만들어줘.
+  리니어 스타일로 예쁘게  만들어줘.
+
+  Rolerubric , Context ,Tools ,workflow , Guardrail 포함해서.
+```
+
 ## 확인 질문 (답변이 없어 기본값으로 진행)
 
 | # | 질문 | 적용한 기본값 |
