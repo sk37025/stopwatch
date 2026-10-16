@@ -12,7 +12,7 @@ Claude Code로 만든 HTML 스탑워치 결과물입니다.
 
 ```
 .
-├── .github/workflows/pages.yml
+├── index.html        # Pages 접속 시 output/stopwatch.html로 이동
 ├── README.md
 └── output/
     ├── stopwatch.html
