@@ -2,10 +2,136 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="refresh" content="0; url=output/stopwatch.html">
-<title>크로노 스탑워치</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>오늘의 아웃풋</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #08090a;
+    --surface: #0f1011;
+    --border: #1f2023;
+    --text: #f7f8f8;
+    --text-2: #b4b5b9;
+    --text-3: #8a8f98;
+    --accent: #5e6ad2;
+    --tab-hover: #151618;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #fbfbfc;
+      --surface: #ffffff;
+      --border: #ececef;
+      --text: #1b1c1f;
+      --text-2: #45474d;
+      --text-3: #75777e;
+      --tab-hover: #f5f5f7;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    display: flex; flex-direction: column;
+    background: var(--bg); color: var(--text);
+    font-family: "Inter", "Noto Sans KR", -apple-system, system-ui, sans-serif;
+    font-size: 14px; -webkit-font-smoothing: antialiased;
+  }
+  header {
+    flex: none; background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 14px 16px 0;
+  }
+  .top { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .top h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+  .top span { font-size: 12px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .tabs {
+    display: flex; gap: 4px; margin-top: 10px;
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex: none; position: relative; display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 12px 12px; border: 0; background: none; cursor: pointer;
+    font: inherit; font-size: 13px; font-weight: 500; color: var(--text-3);
+    border-radius: 6px 6px 0 0; transition: color 0.12s, background 0.12s;
+  }
+  .tab:hover { color: var(--text-2); background: var(--tab-hover); }
+  .tab[aria-selected="true"] { color: var(--text); }
+  .tab[aria-selected="true"]::after {
+    content: ""; position: absolute; left: 8px; right: 8px; bottom: -1px;
+    height: 2px; border-radius: 2px; background: var(--accent);
+  }
+  .tab .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c); }
+  .tab .open { font-size: 11px; color: var(--text-3); text-decoration: none; padding: 0 2px; }
+  .tab .open:hover { color: var(--accent); }
+  main { flex: 1; min-height: 0; position: relative; }
+  iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: var(--bg); }
+  iframe[hidden] { display: none; }
+</style>
 </head>
 <body>
-<p><a href="output/stopwatch.html">크로노 스탑워치로 이동</a></p>
+<header>
+  <div class="top">
+    <h1>오늘의 아웃풋</h1>
+    <span>2026-10-16 · Claude Code</span>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="결과물"></nav>
+</header>
+<main></main>
+
+<script>
+  // 새 결과물은 이 목록에 한 줄 추가하면 탭이 생긴다.
+  const OUTPUTS = [
+    { id: "news",    label: "AI 뉴스 클리핑",   src: "output/ai-news-2026-10-15.html", color: "#5e6ad2" },
+    { id: "chrono",  label: "크로노 스탑워치",   src: "output/stopwatch.html",          color: "#e0a458" },
+    { id: "digital", label: "디지털 스탑워치",   src: "output/digital-stopwatch.html",  color: "#4cb782" },
+  ];
+
+  const nav = document.querySelector(".tabs");
+  const main = document.querySelector("main");
+  const frames = {};
+
+  for (const o of OUTPUTS) {
+    const tab = document.createElement("button");
+    tab.className = "tab";
+    tab.role = "tab";
+    tab.id = "tab-" + o.id;
+    tab.dataset.id = o.id;
+    tab.style.setProperty("--c", o.color);
+    tab.innerHTML = `<span class="dot"></span>${o.label}<a class="open" href="${o.src}" target="_blank" rel="noopener" title="새 탭에서 열기">↗</a>`;
+    tab.addEventListener("click", (e) => {
+      if (e.target.closest(".open")) return;
+      location.hash = o.id;
+    });
+    nav.appendChild(tab);
+  }
+
+  // iframe은 처음 선택될 때 만들고, 이후엔 숨김/표시만 해서 스탑워치 상태를 유지한다.
+  function show(id) {
+    const o = OUTPUTS.find((x) => x.id === id) || OUTPUTS[0];
+    for (const tab of nav.children) tab.setAttribute("aria-selected", tab.dataset.id === o.id);
+    if (!frames[o.id]) {
+      const f = document.createElement("iframe");
+      f.src = o.src;
+      f.title = o.label;
+      main.appendChild(f);
+      frames[o.id] = f;
+    }
+    for (const [k, f] of Object.entries(frames)) f.hidden = k !== o.id;
+    document.title = o.label + " · 오늘의 아웃풋";
+    frames[o.id].focus();
+  }
+
+  nav.addEventListener("keydown", (e) => {
+    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+    const tabs = [...nav.children];
+    const i = tabs.findIndex((t) => t.getAttribute("aria-selected") === "true");
+    const next = tabs[(i + (e.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length];
+    location.hash = next.dataset.id;
+    next.focus();
+  });
+
+  addEventListener("hashchange", () => show(location.hash.slice(1)));
+  show(location.hash.slice(1));
+</script>
 </body>
 </html>

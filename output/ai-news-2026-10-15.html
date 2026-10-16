@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI News Clipping · 2026-10-15</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #08090a;
+    --surface: #0f1011;
+    --surface-hover: #151618;
+    --border: #1f2023;
+    --border-strong: #2a2b2f;
+    --text: #f7f8f8;
+    --text-2: #b4b5b9;
+    --text-3: #8a8f98;
+    --accent: #5e6ad2;
+    --accent-soft: rgba(94, 106, 210, 0.14);
+    --nyt: #e5e5e5;
+    --eco: #e3120b;
+    --warn: #f2c94c;
+    --warn-soft: rgba(242, 201, 76, 0.10);
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #fbfbfc;
+      --surface: #ffffff;
+      --surface-hover: #f5f5f7;
+      --border: #ececef;
+      --border-strong: #dcdce0;
+      --text: #1b1c1f;
+      --text-2: #45474d;
+      --text-3: #75777e;
+      --accent-soft: rgba(94, 106, 210, 0.10);
+      --nyt: #1b1c1f;
+      --warn: #a37a00;
+      --warn-soft: rgba(242, 201, 76, 0.16);
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", "Noto Sans KR", -apple-system, system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: "";
+    position: fixed; inset: 0 0 auto 0; height: 420px;
+    background: radial-gradient(60% 100% at 50% 0%, var(--accent-soft), transparent 70%);
+    pointer-events: none; z-index: -1;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 56px 16px 96px; }
+
+  /* Header */
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 500; color: var(--text-2);
+    padding: 4px 10px; border: 1px solid var(--border-strong); border-radius: 999px;
+    background: var(--surface);
+  }
+  .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+  h1 {
+    margin-top: 20px; font-size: clamp(28px, 6vw, 40px); font-weight: 600;
+    letter-spacing: -0.03em; line-height: 1.15;
+    background: linear-gradient(180deg, var(--text) 30%, var(--text-3));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .meta { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px 16px; color: var(--text-3); font-size: 13px; }
+  .meta b { color: var(--text-2); font-weight: 500; }
+
+  /* Brief */
+  .brief {
+    margin-top: 32px; padding: 20px; border: 1px solid var(--border); border-radius: 12px;
+    background: var(--surface);
+  }
+  .label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); }
+  .brief p { margin-top: 8px; color: var(--text-2); font-size: 15px; }
+  .notice {
+    margin-top: 12px; padding: 10px 14px; border-radius: 8px; font-size: 13px;
+    color: var(--warn); background: var(--warn-soft); border: 1px solid color-mix(in srgb, var(--warn) 30%, transparent);
+  }
+  .notice:empty { display: none; }
+
+  /* List */
+  .list-head { margin-top: 40px; display: flex; justify-content: space-between; align-items: baseline; padding: 0 4px 10px; border-bottom: 1px solid var(--border); }
+  .list-head span:last-child { font-size: 12px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .list { list-style: none; }
+  .item { border-bottom: 1px solid var(--border); }
+  .item a.row {
+    display: grid; grid-template-columns: 32px 1fr; gap: 12px;
+    padding: 20px 4px; color: inherit; text-decoration: none;
+    transition: background 0.12s ease;
+    border-radius: 8px;
+  }
+  .item a.row:hover { background: var(--surface-hover); }
+  .num { font-size: 12px; color: var(--text-3); font-variant-numeric: tabular-nums; padding-top: 3px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .src { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: var(--text-2); }
+  .src::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: var(--c); }
+  .src.nyt { --c: var(--nyt); }
+  .src.eco { --c: var(--eco); }
+  .chip {
+    font-size: 11px; font-weight: 500; padding: 1px 8px; border-radius: 999px;
+    border: 1px solid var(--border-strong); color: var(--text-2);
+  }
+  .item h2 { margin-top: 8px; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.4; }
+  .orig { margin-top: 2px; font-size: 13px; color: var(--text-3); font-style: italic; }
+  .summary { margin-top: 10px; color: var(--text-2); }
+  .why {
+    margin-top: 12px; padding-left: 12px; border-left: 2px solid var(--accent);
+    color: var(--text-2); font-size: 13px;
+  }
+  .why b { color: var(--text); font-weight: 500; }
+  .arrow { margin-left: auto; color: var(--text-3); font-size: 12px; }
+
+  footer { margin-top: 40px; font-size: 12px; color: var(--text-3); text-align: center; }
+
+  @media (max-width: 520px) {
+    .wrap { padding-top: 36px; }
+    .item a.row { grid-template-columns: 1fr; gap: 6px; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <span class="eyebrow"><span class="dot"></span>AI News Clipping</span>
+    <h1>10월 15일 AI 뉴스 브리핑</h1>
+    <div class="meta">
+      <span>기준일 <b>2026-10-15</b></span>
+      <span>출처 <b>The Economist · The New York Times</b></span>
+      <span>기사 <b>10</b>건</span>
+      <span>생성 <b>2026-10-16 13:12 KST</b></span>
+    </div>
+  </header>
+
+  <section class="brief">
+    <div class="label">Brief</div>
+    <p>어제 AI 뉴스의 키워드는 ‘돈과 리스크’다. AI 지출에 대한 의구심으로 기술주와 네오클라우드가 흔들렸고, 이코노미스트는 반도체 사이클과 AI 네오랩의 성과에 의문을 던졌다. 반면 Anthropic은 매출 급증과 IPO 계획을 내놓았다. 동시에 OpenAI 도청장치 사건과 전쟁 속 데이터센터 공격 등 AI 인프라의 안보 리스크가 부각됐다.</p>
+    <div class="notice">10개 확인됨 (목표 10개). 두 매체 모두 본문 접근이 차단(페이월·403)되어 요약은 각 매체 공식 RSS의 제목·부제에서 확인된 범위로만 작성했습니다. 02·03·10번은 미국 동부시간 10/14 저녁 게재(한국시간 10/15)입니다.</div>
+  </section>
+
+  <div class="list-head">
+    <span class="label">Top Stories</span>
+    <span>NYT 6 · Economist 4</span>
+  </div>
+
+  <ol class="list">
+    <li class="item">
+      <a class="row" href="https://www.nytimes.com/2026/10/15/business/chip-stocks-technology.html" target="_blank" rel="noopener">
+        <span class="num">01</span>
+        <div>
+          <div class="tags">
+            <span class="src nyt">The New York Times</span>
+            <span class="chip">투자·시장</span>
+            <span class="arrow">원문 ↗</span>
+          </div>
+          <h2>AI 지출 의구심에 기술주 추가 하락</h2>
+          <p class="orig">Tech Stocks Drop Further Amid Doubts Over AI Spending</p>
+          <p class="summary">기술주가 급락했다가 장중 방향을 돌리는 등 큰 변동을 보였다. 치솟는 AI 지출과 끈질긴 인플레이션에 대한 우려가 매도세를 부추겼다.</p>
+          <p class="why"><b>왜 중요한가</b> — AI 투자 수익성에 대한 회의론이 개별 기업을 넘어 시장 전반의 변동성 요인이 되고 있다.</p>
+        </div>
+      </a>
+    </li>
+    <li class="item">
+      <a class="row" href="https://www.nytimes.com/2026/10/14/technology/anthropic-ipo-revenue-profit.html" target="_blank" rel="noopener">
+        <span class="num">02</span>
+        <div>
+          <div class="tags">
+            <span class="src nyt">The New York Times</span>
+            <span class="chip">기업</span>
+            <span class="arrow">원문 ↗</span>
+          </div>
+          <h2>Anthropic, 3분기 매출 45% 증가한 168억 달러</h2>
+          <p class="orig">Anthropic Says Revenue Jumped 45% to $16.8 Billion in Third Quarter</p>
+          <p class="summary">Anthropic이 3분기 매출이 45% 늘어 168억 달러를 기록했다고 밝혔다. 회사는 수요일 투자자 회의를 열었으며, 이르면 다음 달 대형 기업공개(IPO)를 계획하고 있다.</p>
+          <p class="why"><b>왜 중요한가</b> — 프런티어 AI 기업의 첫 대형 IPO가 될 수 있어 업계 전체 밸류에이션의 기준점이 된다.</p>
+        </div>
+      </a>
+    </li>
+    <li class="item">
+      <a class="row" href="https://www.nytimes.com/2026/10/14/technology/openai-engineer-hidden-device-saudi-government.html" target="_blank" rel="noopener">
+        <span class="num">03</span>
+        <div>
+          <div class="tags">
+            <span class="src nyt">The New York Times</span>
+            <span class="chip">기업</span>
+            <span class="arrow">원문 ↗</span>
+          </div>
+          <h2>도청장치 혐의 OpenAI 엔지니어, 사우디 자문 이력</h2>
+          <p class="orig">OpenAI Engineer, Who Is Charged With Planting Bug, Advised Saudis</p>
+          <p class="summary">OpenAI 사무실에 도청장치를 설치한 혐의로 기소된 엔지니어는 현재 해고된 상태다. 그는 사우디아라비아 정부 기관에 자문했다고 말한 적이 있으며, 사우디 왕자와 함께 한 벤처 회사의 파트너로도 이름을 올렸다.</p>
+          <p class="why"><b>왜 중요한가</b> — 선두 AI 연구소의 보안과 기술 유출 문제가 국가안보 차원의 이슈로 커지고 있다.</p>
+        </div>
+      </a>
+    </li>
+    <li class="item">
+      <a class="row" href="https://www.nytimes.com/2026/10/15/business/russia-ukraine-data-centers-war.html" target="_blank" rel="noopener">
+        <span class="num">04</span>
+        <div>
+          <div class="tags">
+            <span class="src nyt">The New York Times</span>
+            <span class="chip">사회</span>
+            <span class="arrow">원문 ↗</span>
+          </div>
+          <h2>데이터센터, 전쟁의 공격 표적이 되다</h2>
+          <p class="orig">Data Centers Become Targets in Wars in Ukraine, Russia and the Middle East</p>
+          <p class="summary">우크라이나·러시아·중동의 전쟁에서 군이 데이터센터를 공격 대상으로 삼고 있다. 이 시설들은 온라인 서비스와 AI 시스템을 구동하는 컴퓨팅 거점이다.</p>
+          <p class="why"><b>왜 중요한가</b> — AI 인프라가 경제 자산을 넘어 군사 표적이 되면서 데이터센터 입지와 보호가 안보 문제로 떠올랐다.</p>
+        </div>
+      </a>
+    </li>
+    <li class="item">
+      <a class="row" href="https://www.nytimes.com/2026/10/15/business/dealbook/ai-neoclouds-coreweave-stocks.html" target="_blank" rel="noopener">
+        <span class="num">05</span>
+        <div>
+          <div class="tags">
+            <span class="src nyt">The New York Times</span>
+            <span class="chip">투자·시장</span>
+            <span class="arrow">원문 ↗</span>
+          </div>
+          <h2>&#x27;네오클라우드&#x27; 급락의 여파</h2>
+          <p class="orig">The Fallout From the ‘Neocloud’ Wipeout</p>
+          <p class="summary">CoreWeave 같은 AI 인프라 기업의 건전성에 대한 투자자 우려가 새롭게 커지고 있다. 이 우려가 AI 산업 전반에 부담을 주고 있다.</p>
+          <p class="why"><b>왜 중요한가</b> — GPU 임대형 클라우드의 부진은 AI 인프라 투자 사이클이 꺾이는지 가늠하는 선행 지표가 될 수 있다.</p>
+        </div>
+      </a>
+    </li>
+    <li class="item">
+      <a class="row" href="https://www.economist.com/business/2026/10/15/is-the-semiconductor-industry-headed-for-an-almighty-crash" target="_blank" rel="noopener">
+        <span class="num">06</span>
+        <div>
+          <div class="tags">
+            <span class="src eco">The Economist</span>
+            <span class="chip">반도체</span>
+            <span class="arrow">원문 ↗</span>
+          </div>
+          <h2>반도체 산업, 대폭락으로 향하는가</h2>
+          <p class="orig">Is the semiconductor industry headed for an almighty crash?</p>
+          <p class="summary">이코노미스트가 AI 호황 속 반도체 산업의 붕괴 가능성을 짚었다. 붕괴가 오더라도 그 낙폭은 호황만큼 가파르지 않을 것이라고 볼 근거가 있다고 분석했다.</p>
+          <p class="why"><b>왜 중요한가</b> — AI 투자 둔화 우려가 커지는 시점에 반도체 사이클 하락의 강도를 가늠할 판단 근거를 준다.</p>
+        </div>
+      </a>
+    </li>
+    <li class="item">
+      <a class="row" href="https://www.economist.com/business/2026/10/15/ai-neolabs-are-raising-huge-sums-most-have-little-to-show-for-it" target="_blank" rel="noopener">
+        <span class="num">07</span>
+        <div>
+          <div class="tags">
+            <span class="src eco">The Economist</span>
+            <span class="chip">투자·시장</span>
+            <span class="arrow">원문 ↗</span>
+          </div>
+          <h2>거액 모은 AI &#x27;네오랩&#x27;, 성과는 미미</h2>
+          <p class="orig">AI neolabs are raising huge sums. Most have little to show for it</p>
+          <p class="summary">스타 연구자들이 독립해 세운 AI &#x27;neolab&#x27;들이 막대한 자금을 유치하고 있지만, 대부분 내세울 성과가 거의 없다. 이제는 결과를 내야 할 때라고 이코노미스트는 지적했다.</p>
+          <p class="why"><b>왜 중요한가</b> — 연구자 명성에 기댄 초기 AI 투자에 대해 성과 검증 요구가 커지고 있다.</p>
+        </div>
+      </a>
+    </li>
+    <li class="item">
+      <a class="row" href="https://www.economist.com/business/2026/10/15/when-ai-agents-take-matters-into-their-own-hands" target="_blank" rel="noopener">
+        <span class="num">08</span>
+        <div>
+          <div class="tags">
+            <span class="src eco">The Economist</span>
+            <span class="chip">기술</span>
+            <span class="arrow">원문 ↗</span>
+          </div>
+          <h2>AI 에이전트가 스스로 행동에 나설 때</h2>
+          <p class="orig">When AI agents take matters into their own hands</p>
+          <p class="summary">이코노미스트가 &#x27;Annapurna 사건&#x27;의 내막을 들여다보며, AI 에이전트가 자율적으로 행동에 나섰을 때 벌어지는 일을 다뤘다.</p>
+          <p class="why"><b>왜 중요한가</b> — 에이전트 도입이 늘수록 자율 행동에 대한 통제와 책임 소재가 기업의 핵심 과제가 된다.</p>
+        </div>
+      </a>
+    </li>
+    <li class="item">
+      <a class="row" href="https://www.economist.com/leaders/2026/10/15/what-if-the-machines-take-over-science" target="_blank" rel="noopener">
+        <span class="num">09</span>
+        <div>
+          <div class="tags">
+            <span class="src eco">The Economist</span>
+            <span class="chip">사회</span>
+            <span class="arrow">원문 ↗</span>
+          </div>
+          <h2>기계가 과학을 장악한다면</h2>
+          <p class="orig">What if the machines take over science?</p>
+          <p class="summary">이코노미스트는 사설(Leaders)에서 AI 때문에 학자들이 각자의 학문 분야를 다시 만들어야 할 것이라고 주장했다.</p>
+          <p class="why"><b>왜 중요한가</b> — AI가 연구의 도구를 넘어 연구 주체로 옮겨 가면서 대학과 연구기관의 역할이 재정의될 수 있다.</p>
+        </div>
+      </a>
+    </li>
+    <li class="item">
+      <a class="row" href="https://www.nytimes.com/2026/10/14/technology/meta-senators-tax-avoidance.html" target="_blank" rel="noopener">
+        <span class="num">10</span>
+        <div>
+          <div class="tags">
+            <span class="src nyt">The New York Times</span>
+            <span class="chip">정책·규제</span>
+            <span class="arrow">원문 ↗</span>
+          </div>
+          <h2>상원, Meta 데이터센터 세제 전략 추궁</h2>
+          <p class="orig">Senators Question Meta’s Data Center Tax Strategy</p>
+          <p class="summary">상원 재무위원회 민주당 의원들이 Meta의 마크 저커버그 CEO에게 서한을 보냈다. 서한은 회사가 받은 66억 달러 규모의 세제 혜택에 의문을 제기했다.</p>
+          <p class="why"><b>왜 중요한가</b> — AI 데이터센터 확장에 대한 공공 지원과 세금 혜택이 정치적 감시 대상이 되고 있다.</p>
+        </div>
+      </a>
+    </li>
+  </ol>
+
+  <footer>Curated by Claude · 요약은 원문 확인 범위 내에서 작성되었습니다.</footer>
+</main>
+</body>
+</html>

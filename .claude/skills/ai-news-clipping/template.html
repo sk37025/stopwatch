@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI News Clipping · {{DATE}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #08090a;
+    --surface: #0f1011;
+    --surface-hover: #151618;
+    --border: #1f2023;
+    --border-strong: #2a2b2f;
+    --text: #f7f8f8;
+    --text-2: #b4b5b9;
+    --text-3: #8a8f98;
+    --accent: #5e6ad2;
+    --accent-soft: rgba(94, 106, 210, 0.14);
+    --nyt: #e5e5e5;
+    --eco: #e3120b;
+    --warn: #f2c94c;
+    --warn-soft: rgba(242, 201, 76, 0.10);
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #fbfbfc;
+      --surface: #ffffff;
+      --surface-hover: #f5f5f7;
+      --border: #ececef;
+      --border-strong: #dcdce0;
+      --text: #1b1c1f;
+      --text-2: #45474d;
+      --text-3: #75777e;
+      --accent-soft: rgba(94, 106, 210, 0.10);
+      --nyt: #1b1c1f;
+      --warn: #a37a00;
+      --warn-soft: rgba(242, 201, 76, 0.16);
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", "Noto Sans KR", -apple-system, system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: "";
+    position: fixed; inset: 0 0 auto 0; height: 420px;
+    background: radial-gradient(60% 100% at 50% 0%, var(--accent-soft), transparent 70%);
+    pointer-events: none; z-index: -1;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 56px 16px 96px; }
+
+  /* Header */
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 500; color: var(--text-2);
+    padding: 4px 10px; border: 1px solid var(--border-strong); border-radius: 999px;
+    background: var(--surface);
+  }
+  .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+  h1 {
+    margin-top: 20px; font-size: clamp(28px, 6vw, 40px); font-weight: 600;
+    letter-spacing: -0.03em; line-height: 1.15;
+    background: linear-gradient(180deg, var(--text) 30%, var(--text-3));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .meta { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px 16px; color: var(--text-3); font-size: 13px; }
+  .meta b { color: var(--text-2); font-weight: 500; }
+
+  /* Brief */
+  .brief {
+    margin-top: 32px; padding: 20px; border: 1px solid var(--border); border-radius: 12px;
+    background: var(--surface);
+  }
+  .label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); }
+  .brief p { margin-top: 8px; color: var(--text-2); font-size: 15px; }
+  .notice {
+    margin-top: 12px; padding: 10px 14px; border-radius: 8px; font-size: 13px;
+    color: var(--warn); background: var(--warn-soft); border: 1px solid color-mix(in srgb, var(--warn) 30%, transparent);
+  }
+  .notice:empty { display: none; }
+
+  /* List */
+  .list-head { margin-top: 40px; display: flex; justify-content: space-between; align-items: baseline; padding: 0 4px 10px; border-bottom: 1px solid var(--border); }
+  .list-head span:last-child { font-size: 12px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .list { list-style: none; }
+  .item { border-bottom: 1px solid var(--border); }
+  .item a.row {
+    display: grid; grid-template-columns: 32px 1fr; gap: 12px;
+    padding: 20px 4px; color: inherit; text-decoration: none;
+    transition: background 0.12s ease;
+    border-radius: 8px;
+  }
+  .item a.row:hover { background: var(--surface-hover); }
+  .num { font-size: 12px; color: var(--text-3); font-variant-numeric: tabular-nums; padding-top: 3px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .src { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: var(--text-2); }
+  .src::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: var(--c); }
+  .src.nyt { --c: var(--nyt); }
+  .src.eco { --c: var(--eco); }
+  .chip {
+    font-size: 11px; font-weight: 500; padding: 1px 8px; border-radius: 999px;
+    border: 1px solid var(--border-strong); color: var(--text-2);
+  }
+  .item h2 { margin-top: 8px; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.4; }
+  .orig { margin-top: 2px; font-size: 13px; color: var(--text-3); font-style: italic; }
+  .summary { margin-top: 10px; color: var(--text-2); }
+  .why {
+    margin-top: 12px; padding-left: 12px; border-left: 2px solid var(--accent);
+    color: var(--text-2); font-size: 13px;
+  }
+  .why b { color: var(--text); font-weight: 500; }
+  .arrow { margin-left: auto; color: var(--text-3); font-size: 12px; }
+
+  footer { margin-top: 40px; font-size: 12px; color: var(--text-3); text-align: center; }
+
+  @media (max-width: 520px) {
+    .wrap { padding-top: 36px; }
+    .item a.row { grid-template-columns: 1fr; gap: 6px; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <span class="eyebrow"><span class="dot"></span>AI News Clipping</span>
+    <h1>{{DATE_KO}} AI 뉴스 브리핑</h1>
+    <div class="meta">
+      <span>기준일 <b>{{DATE}}</b></span>
+      <span>출처 <b>The Economist · The New York Times</b></span>
+      <span>기사 <b>{{COUNT}}</b>건</span>
+      <span>생성 <b>{{GENERATED_AT}}</b></span>
+    </div>
+  </header>
+
+  <section class="brief">
+    <div class="label">Brief</div>
+    <p>{{BRIEF}}</p>
+    <div class="notice">{{NOTICE}}</div>
+  </section>
+
+  <div class="list-head">
+    <span class="label">Top Stories</span>
+    <span>NYT {{NYT_COUNT}} · Economist {{ECO_COUNT}}</span>
+  </div>
+
+  <ol class="list">
+    <!-- ARTICLE TEMPLATE: 기사 수만큼 복제. SOURCE_CLASS = nyt | eco -->
+    <li class="item">
+      <a class="row" href="{{URL}}" target="_blank" rel="noopener">
+        <span class="num">{{NN}}</span>
+        <div>
+          <div class="tags">
+            <span class="src {{SOURCE_CLASS}}">{{SOURCE_NAME}}</span>
+            <span class="chip">{{CATEGORY}}</span>
+            <span class="arrow">원문 ↗</span>
+          </div>
+          <h2>{{TITLE_KO}}</h2>
+          <p class="orig">{{TITLE_ORIGINAL}}</p>
+          <p class="summary">{{SUMMARY}}</p>
+          <p class="why"><b>왜 중요한가</b> — {{WHY}}</p>
+        </div>
+      </a>
+    </li>
+    <!-- /ARTICLE TEMPLATE -->
+  </ol>
+
+  <footer>Curated by Claude · 요약은 원문 확인 범위 내에서 작성되었습니다.</footer>
+</main>
+</body>
+</html>
