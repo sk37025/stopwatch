@@ -1,0 +1,373 @@
+<title>크로노 스탑워치</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo+Mono:wght@300;400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+/* Layout: one instrument column — chronograph dial on top, digital readout, controls, lap log */
+:root {
+  --bg: #eef0f3;
+  --face: #ffffff;
+  --ink: #161a22;
+  --muted: #6b7280;
+  --line: #d6dae2;
+  --accent: #2442c9;
+  --good: #1d7a4f;
+  --bad: #b8331f;
+  --font-num: "Chivo Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-ui: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111318; --face: #1a1d24; --ink: #e8eaf0; --muted: #8b92a1;
+    --line: #2c313b; --accent: #8199ff; --good: #5cc795; --bad: #ff8a73;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111318; --face: #1a1d24; --ink: #e8eaf0; --muted: #8b92a1;
+  --line: #2c313b; --accent: #8199ff; --good: #5cc795; --bad: #ff8a73;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 48px;
+}
+.wrap {
+  max-width: 460px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+h1 { font-size: 1rem; font-weight: 600; margin: 0; letter-spacing: 0.02em; }
+.status {
+  font-family: var(--font-num);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.status::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--line);
+}
+.status[data-state="running"] { color: var(--accent); }
+.status[data-state="running"]::before { background: var(--accent); }
+.status[data-state="paused"]::before { background: var(--muted); }
+
+.dial {
+  width: min(100%, 340px);
+  aspect-ratio: 1;
+  max-width: 100%;
+  margin: 0 auto;
+}
+.dial svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.dial .rim { fill: var(--face); stroke: var(--line); stroke-width: 1; }
+.dial .tick { stroke: var(--muted); stroke-width: 1; }
+.dial .tick.major { stroke: var(--ink); stroke-width: 2; }
+.dial .num { fill: var(--muted); font-family: var(--font-num); font-size: 11px; text-anchor: middle; dominant-baseline: central; }
+.dial .sub { fill: none; stroke: var(--line); stroke-width: 1; }
+.dial .subtick { stroke: var(--muted); stroke-width: 1; }
+.dial .sublabel { fill: var(--muted); font-family: var(--font-num); font-size: 7px; text-anchor: middle; letter-spacing: 0.1em; }
+.dial .hand { stroke: var(--accent); stroke-width: 2; stroke-linecap: round; }
+.dial .subhand { stroke: var(--ink); stroke-width: 1.5; stroke-linecap: round; }
+.dial .hub { fill: var(--accent); }
+.dial .hubdot { fill: var(--face); }
+.dial .subhub { fill: var(--ink); }
+
+.readout {
+  font-family: var(--font-num);
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(2.6rem, 13vw, 4rem);
+  text-align: center;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.readout .cs { color: var(--muted); }
+.readout-sub {
+  margin-top: 10px;
+  text-align: center;
+  font-family: var(--font-num);
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.controls { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+button {
+  font: 500 1rem var(--font-ui);
+  padding: 14px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--face);
+  color: var(--ink);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: transform 0.08s ease, background 0.15s ease;
+}
+button:active { transform: scale(0.97); }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+button:disabled { opacity: 0.4; cursor: default; }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--face); }
+kbd {
+  font-family: var(--font-num);
+  font-size: 0.68rem;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+  opacity: 0.55;
+}
+
+.laps h2 {
+  font-size: 0.72rem; font-weight: 600; margin: 0 0 8px;
+  text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted);
+  display: flex; justify-content: space-between;
+}
+.laps ol { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.laps li {
+  display: grid;
+  grid-template-columns: 3.5rem 1fr 1fr;
+  gap: 8px;
+  padding: 11px 2px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.92rem;
+}
+.laps li .n { color: var(--muted); }
+.laps li .split, .laps li .total { text-align: right; }
+.laps li .total { color: var(--muted); }
+.laps li.current .split { color: var(--accent); }
+.laps li.best .split { color: var(--good); }
+.laps li.worst .split { color: var(--bad); }
+.laps li .tag { font-family: var(--font-ui); font-size: 0.7rem; margin-left: 6px; }
+.empty { color: var(--muted); font-size: 0.88rem; padding: 14px 2px; border-top: 1px solid var(--line); margin: 0; }
+.hint { color: var(--muted); font-size: 0.78rem; text-align: center; margin: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  button { transition: none; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>스탑워치</h1>
+    <span class="status" id="status" data-state="idle">대기</span>
+  </header>
+
+  <div class="dial" aria-hidden="true">
+    <svg viewBox="0 0 300 300" id="dial">
+      <circle class="rim" cx="150" cy="150" r="146"></circle>
+      <g id="ticks"></g>
+      <g id="subdial"></g>
+      <line class="subhand" id="minHand" x1="150" y1="205" x2="150" y2="177"></line>
+      <circle class="subhub" cx="150" cy="205" r="2.5"></circle>
+      <line class="hand" id="secHand" x1="150" y1="170" x2="150" y2="20"></line>
+      <circle class="hub" cx="150" cy="150" r="5"></circle>
+      <circle class="hubdot" cx="150" cy="150" r="1.8"></circle>
+    </svg>
+  </div>
+
+  <div>
+    <div class="readout" id="readout" role="timer" aria-live="off">00:00<span class="cs">.00</span></div>
+    <div class="readout-sub" id="lapReadout">랩 1 · 00:00.00</div>
+  </div>
+
+  <div class="controls">
+    <button id="secondary" type="button" disabled>랩 <kbd>L</kbd></button>
+    <button id="primary" class="primary" type="button">시작 <kbd>Space</kbd></button>
+  </div>
+
+  <section class="laps">
+    <h2><span>랩 기록</span><span id="lapCount"></span></h2>
+    <p class="empty" id="empty">측정 중에 랩 버튼을 누르면 구간 기록이 여기에 쌓입니다. 가장 빠른 구간은 초록, 가장 느린 구간은 빨강으로 표시됩니다.</p>
+    <ol id="lapList"></ol>
+  </section>
+
+  <p class="hint">Space 시작·정지 · L 랩 · R 초기화</p>
+</div>
+
+<script>
+(() => {
+  const KEY = "chrono-stopwatch-v1";
+  const $ = (id) => document.getElementById(id);
+  const NS = "http://www.w3.org/2000/svg";
+
+  // state: accumulated ms while paused, start epoch while running, lap totals (ms)
+  let acc = 0, startedAt = null, laps = [];
+
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY) || "null");
+    if (s) { acc = s.acc || 0; startedAt = s.startedAt || null; laps = Array.isArray(s.laps) ? s.laps : []; }
+  } catch (e) {}
+
+  const save = () => {
+    try { localStorage.setItem(KEY, JSON.stringify({ acc, startedAt, laps })); } catch (e) {}
+  };
+
+  const elapsed = () => acc + (startedAt ? Date.now() - startedAt : 0);
+  const running = () => startedAt !== null;
+
+  const fmt = (ms) => {
+    const cs = Math.floor(ms / 10) % 100;
+    const s = Math.floor(ms / 1000) % 60;
+    const m = Math.floor(ms / 60000) % 60;
+    const h = Math.floor(ms / 3600000);
+    const p = (n) => String(n).padStart(2, "0");
+    return { main: (h ? h + ":" : "") + p(m) + ":" + p(s), cs: "." + p(cs) };
+  };
+  const fmtStr = (ms) => { const f = fmt(ms); return f.main + f.cs; };
+
+  // build dial
+  const ticks = $("ticks");
+  for (let i = 0; i < 300; i++) {
+    // fifths of a second: 300 ticks around the dial
+    const a = (i / 300) * Math.PI * 2;
+    const major = i % 25 === 0, mid = i % 5 === 0;
+    if (!mid && !major) continue;
+    const r1 = 140, r2 = major ? 126 : 133;
+    const l = document.createElementNS(NS, "line");
+    l.setAttribute("x1", 150 + Math.sin(a) * r1);
+    l.setAttribute("y1", 150 - Math.cos(a) * r1);
+    l.setAttribute("x2", 150 + Math.sin(a) * r2);
+    l.setAttribute("y2", 150 - Math.cos(a) * r2);
+    l.setAttribute("class", major ? "tick major" : "tick");
+    ticks.appendChild(l);
+    if (major) {
+      const t = document.createElementNS(NS, "text");
+      const sec = (i / 5) || 60;
+      t.setAttribute("x", 150 + Math.sin(a) * 113);
+      t.setAttribute("y", 150 - Math.cos(a) * 113);
+      t.setAttribute("class", "num");
+      t.textContent = sec;
+      ticks.appendChild(t);
+    }
+  }
+  // 30-minute counter subdial
+  const sub = $("subdial");
+  const c = document.createElementNS(NS, "circle");
+  c.setAttribute("cx", 150); c.setAttribute("cy", 205); c.setAttribute("r", 34); c.setAttribute("class", "sub");
+  sub.appendChild(c);
+  for (let i = 0; i < 30; i++) {
+    const a = (i / 30) * Math.PI * 2;
+    const r2 = i % 5 === 0 ? 27 : 30;
+    const l = document.createElementNS(NS, "line");
+    l.setAttribute("x1", 150 + Math.sin(a) * 33);
+    l.setAttribute("y1", 205 - Math.cos(a) * 33);
+    l.setAttribute("x2", 150 + Math.sin(a) * r2);
+    l.setAttribute("y2", 205 - Math.cos(a) * r2);
+    l.setAttribute("class", "subtick");
+    sub.appendChild(l);
+  }
+  const lbl = document.createElementNS(NS, "text");
+  lbl.setAttribute("x", 150); lbl.setAttribute("y", 222); lbl.setAttribute("class", "sublabel");
+  lbl.textContent = "30 MIN";
+  sub.appendChild(lbl);
+
+  const secHand = $("secHand"), minHand = $("minHand");
+
+  const renderTime = () => {
+    const ms = elapsed();
+    const f = fmt(ms);
+    $("readout").innerHTML = f.main + '<span class="cs">' + f.cs + "</span>";
+    const lastTotal = laps.length ? laps[laps.length - 1] : 0;
+    $("lapReadout").textContent = "랩 " + (laps.length + 1) + " · " + fmtStr(ms - lastTotal);
+    secHand.setAttribute("transform", "rotate(" + ((ms % 60000) / 60000) * 360 + " 150 150)");
+    minHand.setAttribute("transform", "rotate(" + ((ms % 1800000) / 1800000) * 360 + " 150 205)");
+    // live current-lap row
+    const cur = document.querySelector("#lapList li.current");
+    if (cur) {
+      cur.querySelector(".split").textContent = fmtStr(ms - lastTotal);
+      cur.querySelector(".total").textContent = fmtStr(ms);
+    }
+  };
+
+  const renderControls = () => {
+    const ms = elapsed();
+    const p = $("primary"), s = $("secondary"), st = $("status");
+    if (running()) {
+      p.innerHTML = "정지 <kbd>Space</kbd>";
+      s.innerHTML = "랩 <kbd>L</kbd>"; s.disabled = false;
+      st.dataset.state = "running"; st.textContent = "측정 중";
+    } else if (ms > 0) {
+      p.innerHTML = "계속 <kbd>Space</kbd>";
+      s.innerHTML = "초기화 <kbd>R</kbd>"; s.disabled = false;
+      st.dataset.state = "paused"; st.textContent = "일시정지";
+    } else {
+      p.innerHTML = "시작 <kbd>Space</kbd>";
+      s.innerHTML = "랩 <kbd>L</kbd>"; s.disabled = true;
+      st.dataset.state = "idle"; st.textContent = "대기";
+    }
+  };
+
+  const renderLaps = () => {
+    const list = $("lapList");
+    list.innerHTML = "";
+    const splits = laps.map((t, i) => t - (i ? laps[i - 1] : 0));
+    let best = -1, worst = -1;
+    if (splits.length >= 2) {
+      best = splits.indexOf(Math.min(...splits));
+      worst = splits.indexOf(Math.max(...splits));
+    }
+    const ms = elapsed();
+    if (ms > 0 && laps.length) {
+      const li = document.createElement("li");
+      li.className = "current";
+      li.innerHTML = '<span class="n">' + String(laps.length + 1).padStart(2, "0") + '</span><span class="split"></span><span class="total"></span>';
+      list.appendChild(li);
+    }
+    for (let i = splits.length - 1; i >= 0; i--) {
+      const li = document.createElement("li");
+      let tag = "";
+      if (i === best) { li.className = "best"; tag = '<span class="tag">최고</span>'; }
+      else if (i === worst) { li.className = "worst"; tag = '<span class="tag">최저</span>'; }
+      li.innerHTML = '<span class="n">' + String(i + 1).padStart(2, "0") + '</span><span class="split">' + tag + fmtStr(splits[i]) + '</span><span class="total">' + fmtStr(laps[i]) + "</span>";
+      list.appendChild(li);
+    }
+    $("empty").hidden = laps.length > 0;
+    $("lapCount").textContent = laps.length ? laps.length + "개" : "";
+  };
+
+  const renderAll = () => { renderControls(); renderLaps(); renderTime(); };
+
+  let raf = null;
+  const loop = () => { renderTime(); raf = running() ? requestAnimationFrame(loop) : null; };
+
+  const toggle = () => {
+    if (running()) { acc += Date.now() - startedAt; startedAt = null; }
+    else { startedAt = Date.now(); if (!raf) raf = requestAnimationFrame(loop); }
+    save(); renderAll();
+  };
+  const lap = () => {
+    if (!running()) return;
+    laps.push(elapsed()); save(); renderLaps(); renderTime();
+  };
+  const reset = () => {
+    if (running()) return;
+    acc = 0; laps = []; save(); renderAll();
+  };
+
+  $("primary").addEventListener("click", toggle);
+  $("secondary").addEventListener("click", () => (running() ? lap() : reset()));
+
+  document.addEventListener("keydown", (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
+    if (e.code === "Space") { e.preventDefault(); toggle(); }
+    else if (e.code === "KeyL") lap();
+    else if (e.code === "KeyR") reset();
+  });
+
+  renderAll();
+  if (running()) raf = requestAnimationFrame(loop);
+})();
+</script>
