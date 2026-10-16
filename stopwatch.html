@@ -86,14 +86,42 @@ h1 { font-size: 1rem; font-weight: 600; margin: 0; letter-spacing: 0.02em; }
 
 .readout {
   font-family: var(--font-num);
-  font-weight: 300;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
-  font-size: clamp(2.6rem, 13vw, 4rem);
-  text-align: center;
-  line-height: 1;
-  letter-spacing: -0.02em;
+  font-size: clamp(2.2rem, 11vw, 3.4rem);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.07em;
+  line-height: 1.2;
 }
-.readout .cs { color: var(--muted); }
+.reel {
+  position: relative;
+  width: 0.68em;
+  height: 1.2em;
+  overflow: hidden;
+  background: var(--face);
+  border: 1px solid var(--line);
+  border-radius: 0.14em;
+}
+.reel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(var(--face) 0%, transparent 30%, transparent 70%, var(--face) 100%);
+  opacity: 0.8;
+}
+.reel.cs { color: var(--muted); }
+.strip {
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.35s cubic-bezier(0.3, 1.5, 0.5, 1);
+  will-change: transform;
+}
+.reel.fast .strip { transition: transform 0.05s linear; }
+.strip span { height: 1.2em; line-height: 1.2em; text-align: center; }
+.sep { color: var(--muted); width: 0.4em; text-align: center; }
 .readout-sub {
   margin-top: 10px;
   text-align: center;
@@ -156,6 +184,7 @@ kbd {
 
 @media (prefers-reduced-motion: reduce) {
   button { transition: none; }
+  .strip, .reel.fast .strip { transition: none; }
 }
 </style>
 
@@ -179,7 +208,7 @@ kbd {
   </div>
 
   <div>
-    <div class="readout" id="readout" role="timer" aria-live="off">00:00<span class="cs">.00</span></div>
+    <div class="readout" id="readout" role="timer" aria-live="off"></div>
     <div class="readout-sub" id="lapReadout">랩 1 · 00:00.00</div>
   </div>
 
@@ -276,10 +305,69 @@ kbd {
 
   const secHand = $("secHand"), minHand = $("minHand");
 
+  // slot-style readout: each digit is a reel (0-9 plus a trailing 0 for the 9 -> 0 wrap)
+  const readoutEl = $("readout");
+  let builtPattern = "", reels = [];
+
+  const snap = (r) => {
+    r.strip.style.transition = "none";
+    r.row = 0;
+    r.strip.style.transform = "translateY(0)";
+    void r.strip.offsetHeight;
+    r.strip.style.transition = "";
+  };
+  const setDigit = (r, d, instant) => {
+    if (r.d === d && !instant) return;
+    if (r.row === 10) snap(r);
+    const wrap = !instant && r.d === 9 && d === 0;
+    r.d = d;
+    r.row = wrap ? 10 : d;
+    if (instant) r.strip.style.transition = "none";
+    r.strip.style.transform = "translateY(" + -r.row * 1.2 + "em)";
+    if (instant) { void r.strip.offsetHeight; r.strip.style.transition = ""; }
+  };
+  const buildReels = (pattern) => {
+    readoutEl.innerHTML = "";
+    reels = [];
+    const total = pattern.replace(/\D/g, "").length;
+    let di = 0;
+    for (const ch of pattern) {
+      if (!/\d/.test(ch)) {
+        const s = document.createElement("span");
+        s.className = "sep";
+        s.textContent = ch;
+        readoutEl.appendChild(s);
+        continue;
+      }
+      const reel = document.createElement("span");
+      reel.className = "reel" + (di >= total - 2 ? " cs" : "") + (di === total - 1 ? " fast" : "");
+      const strip = document.createElement("span");
+      strip.className = "strip";
+      for (let n = 0; n <= 10; n++) {
+        const t = document.createElement("span");
+        t.textContent = n % 10;
+        strip.appendChild(t);
+      }
+      reel.appendChild(strip);
+      readoutEl.appendChild(reel);
+      const r = { strip, d: 0, row: 0 };
+      strip.addEventListener("transitionend", () => { if (r.row === 10) snap(r); });
+      reels.push(r);
+      di++;
+    }
+    builtPattern = pattern.replace(/\d/g, "0");
+  };
+  const setReadout = (str) => {
+    const instant = builtPattern !== str.replace(/\d/g, "0");
+    if (instant) buildReels(str);
+    const digits = str.replace(/\D/g, "");
+    reels.forEach((r, i) => setDigit(r, +digits[i], instant));
+  };
+
   const renderTime = () => {
     const ms = elapsed();
     const f = fmt(ms);
-    $("readout").innerHTML = f.main + '<span class="cs">' + f.cs + "</span>";
+    setReadout(f.main + f.cs);
     const lastTotal = laps.length ? laps[laps.length - 1] : 0;
     $("lapReadout").textContent = "랩 " + (laps.length + 1) + " · " + fmtStr(ms - lastTotal);
     secHand.setAttribute("transform", "rotate(" + ((ms % 60000) / 60000) * 360 + " 150 150)");

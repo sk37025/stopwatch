@@ -1,0 +1,307 @@
+<title>디지털 스탑워치</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one handheld stopwatch drawn as SVG, centered; two physical buttons (stop left, start right) */
+:root {
+  --bg: #e9e6e1;
+  --ink: #2b2723;
+  --muted: #7a736b;
+  --font-ui: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #1b1a19; --ink: #ece8e2; --muted: #9a938a; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #1b1a19; --ink: #ece8e2; --muted: #9a938a; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 40px;
+}
+main { max-width: 420px; margin: 56px auto 0; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+svg.watch { width: 100%; max-width: 400px; height: auto; display: block; filter: drop-shadow(0 14px 18px rgba(0,0,0,0.28)); }
+.hint { margin: 0; text-align: center; color: var(--muted); font-size: 0.85rem; line-height: 1.6; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.seg { fill: #1d211b; opacity: 0.07; }
+.seg.on { opacity: 0.92; }
+.lcdsq { fill: #1d211b; opacity: 0.92; }
+.running .colon { animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0.1; } }
+
+.finger {
+  opacity: 0;
+  transform: translateY(-70px);
+  transition: transform 0.12s ease-out, opacity 0.1s ease-out;
+}
+.finger.tap { opacity: 1; transform: translateY(-4px); }
+svg.watch { overflow: visible; }
+.btn { cursor: pointer; outline: none; }
+.btn .cap { transition: transform 0.07s ease; }
+.btn.pressed .cap { transform: translateY(5px); }
+.btn:focus-visible .shell { stroke: #ffb347; stroke-width: 2.5; }
+.btn .shell { stroke: #3d3d3d; stroke-width: 1.2; }
+.lbl { font-family: Arial, Helvetica, sans-serif; font-weight: 700; letter-spacing: 1.5px; fill: #f2f2f2; }
+
+@media (prefers-reduced-motion: reduce) {
+  .running .colon { animation: none; }
+  .btn .cap, .finger { transition: none; }
+}
+</style>
+
+<main>
+  <svg class="watch" id="watch" viewBox="0 0 400 520" role="group" aria-label="디지털 스탑워치">
+    <defs>
+      <radialGradient id="caseG" cx="40%" cy="30%" r="80%">
+        <stop offset="0" stop-color="#3a3a3a"></stop>
+        <stop offset="1" stop-color="#0c0c0c"></stop>
+      </radialGradient>
+      <linearGradient id="blueG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#3b8fe0"></stop>
+        <stop offset="1" stop-color="#1f5fb0"></stop>
+      </linearGradient>
+      <linearGradient id="lcdG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#c9cfbd"></stop>
+        <stop offset="1" stop-color="#abb29e"></stop>
+      </linearGradient>
+      <linearGradient id="btnG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#2e2e2e"></stop>
+        <stop offset="1" stop-color="#121212"></stop>
+      </linearGradient>
+      <path id="arcTop" d="M98.9,115.1 A132,132 0 0 1 301.1,115.1" fill="none"></path>
+      <path id="arcLeft" d="M91.9,275.8 A132,132 0 0 1 91.9,124.2" fill="none"></path>
+      <path id="arcRight" d="M308.1,124.3 A132,132 0 0 1 308.1,275.7" fill="none"></path>
+    </defs>
+
+    <!-- lanyard -->
+    <g fill="none" stroke="#141414" stroke-linecap="round">
+      <path d="M186,372 C165,425 140,455 158,498" stroke-width="7"></path>
+      <path d="M214,372 C240,425 262,460 238,500" stroke-width="7"></path>
+      <path d="M186,372 C165,425 140,455 158,498" stroke="#3b3b3b" stroke-width="1.5" stroke-dasharray="2 4"></path>
+      <path d="M214,372 C240,425 262,460 238,500" stroke="#3b3b3b" stroke-width="1.5" stroke-dasharray="2 4"></path>
+    </g>
+    <rect x="156" y="474" width="86" height="38" rx="14" fill="#101010"></rect>
+    <rect x="170" y="480" width="58" height="4" rx="2" fill="#2c2c2c"></rect>
+    <rect x="170" y="492" width="58" height="4" rx="2" fill="#2c2c2c"></rect>
+    <rect x="176" y="352" width="48" height="36" rx="8" fill="#0d0d0d"></rect>
+
+    <!-- top buttons, drawn under the case -->
+    <g class="btn" id="btnReset" tabindex="0" role="button" aria-label="초기화" transform="translate(200,34)">
+      <rect class="shell" x="-18" y="-20" width="36" height="34" rx="6" fill="#0b0b0b"></rect>
+      <g class="cap">
+        <rect x="-16" y="-24" width="32" height="30" rx="6" fill="url(#btnG)" stroke="#3d3d3d" stroke-width="1.2"></rect>
+        <rect x="-10" y="-20" width="20" height="3" rx="1.5" fill="#555" opacity="0.6"></rect>
+      </g>
+    </g>
+
+    <g class="btn" id="btnStop" tabindex="0" role="button" aria-label="정지" transform="translate(93,72) rotate(-40)">
+      <rect class="shell" x="-26" y="-14" width="52" height="40" rx="7" fill="#0b0b0b"></rect>
+      <g class="cap">
+        <rect x="-23" y="-22" width="46" height="34" rx="7" fill="url(#btnG)" stroke="#3d3d3d" stroke-width="1.2"></rect>
+        <rect x="-15" y="-18" width="30" height="3" rx="1.5" fill="#555" opacity="0.6"></rect>
+      </g>
+    </g>
+    <g class="btn" id="btnStart" tabindex="0" role="button" aria-label="시작" transform="translate(307,72) rotate(40)">
+      <rect class="shell" x="-26" y="-14" width="52" height="40" rx="7" fill="#0b0b0b"></rect>
+      <g class="cap">
+        <rect x="-23" y="-22" width="46" height="34" rx="7" fill="url(#btnG)" stroke="#3d3d3d" stroke-width="1.2"></rect>
+        <rect x="-15" y="-18" width="30" height="3" rx="1.5" fill="#555" opacity="0.6"></rect>
+      </g>
+    </g>
+
+    <!-- case -->
+    <circle cx="200" cy="200" r="168" fill="url(#caseG)"></circle>
+    <circle cx="200" cy="200" r="160" fill="none" stroke="#050505" stroke-width="3"></circle>
+    <circle cx="200" cy="200" r="150" fill="#0a0a0a" stroke="#3a3a3a" stroke-width="1.5"></circle>
+    <circle cx="200" cy="200" r="122" fill="none" stroke="#d42a2a" stroke-width="2"></circle>
+
+    <text class="lbl" font-size="12" text-anchor="middle"><textPath href="#arcTop" startOffset="50%">RESET</textPath></text>
+    <text class="lbl" font-size="12" text-anchor="middle"><textPath href="#arcLeft" startOffset="50%">STOP</textPath></text>
+    <text class="lbl" font-size="12" text-anchor="middle"><textPath href="#arcRight" startOffset="50%">START</textPath></text>
+    <text x="200" y="148" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="14" letter-spacing="2" fill="#e23b3b">CHRONO</text>
+    <text x="200" y="298" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="15" letter-spacing="1" fill="#f2f2f2">CH-011</text>
+
+    <!-- LCD -->
+    <rect x="95" y="160" width="210" height="104" rx="9" fill="url(#blueG)"></rect>
+    <g id="days" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="7.5" fill="#fff" text-anchor="middle"></g>
+    <g font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="7" fill="#fff">
+      <rect x="107" y="252" width="5" height="5" fill="#fff"></rect><text x="115" y="257.5">STOP W</text>
+      <rect x="172" y="252" width="5" height="5" fill="#fff"></rect><text x="180" y="257.5">DATE</text>
+      <rect x="236" y="252" width="5" height="5" fill="#fff"></rect><text x="244" y="257.5">TIME</text>
+    </g>
+    <rect x="106" y="177" width="188" height="68" rx="3" fill="url(#lcdG)" stroke="#7b8270" stroke-width="1"></rect>
+    <g id="digits" transform="translate(106,189) skewX(-5)"></g>
+
+    <!-- fingers: one per button, hidden until that button is pressed -->
+    <defs>
+      <linearGradient id="skinG" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#e9b997"></stop>
+        <stop offset="0.5" stop-color="#f4cfb2"></stop>
+        <stop offset="1" stop-color="#dba684"></stop>
+      </linearGradient>
+      <g id="fingerShape">
+        <path d="M-20,-130 L-20,-20 A20,20 0 0 0 20,-20 L20,-130 Z" fill="url(#skinG)" stroke="#b9805e" stroke-width="1.5"></path>
+        <path d="M-12,-34 L-12,-26 A12,12 0 0 0 12,-26 L12,-34 A12,12 0 0 0 -12,-34 Z" fill="#f8e3d6" stroke="#caa08a" stroke-width="1"></path>
+        <path d="M-12,-72 Q0,-68 12,-72 M-12,-92 Q0,-88 12,-92" fill="none" stroke="#c98d6a" stroke-width="1" opacity="0.55"></path>
+      </g>
+    </defs>
+    <g transform="translate(93,72) rotate(-40)" pointer-events="none"><g class="finger" id="fStop"><use href="#fingerShape"></use></g></g>
+    <g transform="translate(307,72) rotate(40)" pointer-events="none"><g class="finger" id="fStart"><use href="#fingerShape"></use></g></g>
+    <g transform="translate(200,34)" pointer-events="none"><g class="finger" id="fReset"><use href="#fingerShape"></use></g></g>
+  </svg>
+
+  <p class="hint">오른쪽 위 버튼은 시작, 왼쪽 위 버튼은 정지, 위쪽 가운데 버튼은 초기화입니다. 초기화는 정지 상태에서만 됩니다. 키보드는 스페이스바(시작·정지)와 R(초기화)을 쓰세요.</p>
+  <div class="sr" id="live" aria-live="polite"></div>
+</main>
+
+<script>
+(() => {
+  const NS = "http://www.w3.org/2000/svg";
+  const $ = (id) => document.getElementById(id);
+  const mk = (tag, attrs) => {
+    const el = document.createElementNS(NS, tag);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    return el;
+  };
+
+  // weekday row: today gets a bar above its label
+  const days = $("days");
+  const names = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
+  const today = new Date().getDay();
+  names.forEach((n, i) => {
+    const x = 114 + i * 29;
+    const t = mk("text", { x, y: 175 });
+    t.textContent = n;
+    days.appendChild(t);
+    if (i === today) days.appendChild(mk("rect", { x: x - 8, y: 163, width: 16, height: 2.2, fill: "#fff" }));
+  });
+
+  // 7-segment digits
+  const PATHS = {
+    a: "M4,2 L6,0 L16,0 L18,2 L16,4 L6,4Z",
+    g: "M4,22 L6,20 L16,20 L18,22 L16,24 L6,24Z",
+    d: "M4,42 L6,40 L16,40 L18,42 L16,44 L6,44Z",
+    f: "M2,3 L4,5 L4,19 L2,21 L0,19 L0,5Z",
+    b: "M20,3 L22,5 L22,19 L20,21 L18,19 L18,5Z",
+    e: "M2,23 L4,25 L4,39 L2,41 L0,39 L0,25Z",
+    c: "M20,23 L22,25 L22,39 L20,41 L18,39 L18,25Z"
+  };
+  const MAP = ["abcdef", "bc", "abdeg", "abcdg", "bcfg", "acdfg", "acdefg", "abc", "abcdefg", "abcdfg"];
+  const XS = [8, 34, 68, 94, 128, 154];
+  const digitsG = $("digits");
+  const dgs = XS.map((x) => {
+    const g = mk("g", { transform: "translate(" + x + ",0)" });
+    const segs = {};
+    for (const k in PATHS) {
+      segs[k] = mk("path", { d: PATHS[k], class: "seg" });
+      g.appendChild(segs[k]);
+    }
+    digitsG.appendChild(g);
+    return { segs, v: null };
+  });
+  const colon = mk("g", { class: "colon" });
+  colon.appendChild(mk("rect", { x: 59.5, y: 12, width: 4.5, height: 4.5, class: "lcdsq" }));
+  colon.appendChild(mk("rect", { x: 59.5, y: 28, width: 4.5, height: 4.5, class: "lcdsq" }));
+  digitsG.appendChild(colon);
+  digitsG.appendChild(mk("rect", { x: 120.5, y: 39.5, width: 4.5, height: 4.5, class: "lcdsq" }));
+
+  const setDigit = (dg, n) => {
+    if (dg.v === n) return;
+    dg.v = n;
+    for (const k in dg.segs) dg.segs[k].setAttribute("class", MAP[n].includes(k) ? "seg on" : "seg");
+  };
+
+  // stopwatch state
+  let acc = 0, startedAt = null, raf = null;
+  const elapsed = () => acc + (startedAt ? Date.now() - startedAt : 0);
+
+  const render = () => {
+    const ms = elapsed();
+    const cs = Math.floor(ms / 10) % 100;
+    const s = Math.floor(ms / 1000) % 60;
+    const m = Math.floor(ms / 60000) % 100;
+    const v = [Math.floor(m / 10), m % 10, Math.floor(s / 10), s % 10, Math.floor(cs / 10), cs % 10];
+    v.forEach((n, i) => setDigit(dgs[i], n));
+  };
+  const loop = () => { render(); raf = startedAt ? requestAnimationFrame(loop) : null; };
+  const spoken = () => {
+    const ms = elapsed();
+    return Math.floor(ms / 60000) + "분 " + (Math.floor(ms / 1000) % 60) + "초";
+  };
+
+  const start = () => {
+    if (startedAt) return;
+    startedAt = Date.now();
+    $("watch").classList.add("running");
+    if (!raf) raf = requestAnimationFrame(loop);
+    $("live").textContent = "시작";
+  };
+  const stop = () => {
+    if (!startedAt) return;
+    acc += Date.now() - startedAt;
+    startedAt = null;
+    $("watch").classList.remove("running");
+    render();
+    $("live").textContent = "정지 " + spoken();
+  };
+
+  const reset = () => {
+    if (startedAt) return;
+    acc = 0;
+    render();
+    $("live").textContent = "초기화";
+  };
+
+  // a finger slides in over the pressed button; kept down at least MIN ms so quick taps stay visible
+  const MIN = 150;
+  const fingerOf = (el) => $(el.id.replace("btn", "f"));
+  const flash = (el, ms = 180) => {
+    el.classList.add("pressed");
+    fingerOf(el).classList.add("tap");
+    setTimeout(() => {
+      el.classList.remove("pressed");
+      fingerOf(el).classList.remove("tap");
+    }, ms);
+  };
+
+  const press = (el, fn) => {
+    const fing = fingerOf(el);
+    let downAt = 0;
+    const down = () => { downAt = Date.now(); el.classList.add("pressed"); fing.classList.add("tap"); };
+    const up = () => {
+      const wait = Math.max(0, MIN - (Date.now() - downAt));
+      setTimeout(() => { el.classList.remove("pressed"); fing.classList.remove("tap"); }, wait);
+    };
+    el.addEventListener("pointerdown", () => { down(); fn(); });
+    ["pointerup", "pointerleave", "pointercancel", "blur"].forEach((e) => el.addEventListener(e, up));
+    el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.repeat) { e.preventDefault(); down(); fn(); }
+    });
+    el.addEventListener("keyup", up);
+  };
+  press($("btnStart"), start);
+  press($("btnStop"), stop);
+  press($("btnReset"), reset);
+
+  document.addEventListener("keydown", (e) => {
+    if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.code === "KeyR") {
+      if (startedAt) return;
+      flash($("btnReset"));
+      reset();
+      return;
+    }
+    if (e.code !== "Space") return;
+    e.preventDefault();
+    const btn = startedAt ? $("btnStop") : $("btnStart");
+    flash(btn);
+    startedAt ? stop() : start();
+  });
+
+  render();
+})();
+</script>
