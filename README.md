@@ -6,10 +6,13 @@ Claude Code로 만든 HTML 스탑워치 결과물입니다.
 
 `output/` 폴더의 HTML 파일을 브라우저로 열면 바로 동작합니다.
 
+크로노 스탑워치는 GitHub Pages로도 볼 수 있습니다: https://sk37025.github.io/stopwatch/
+
 ## 폴더 구조
 
 ```
 .
+├── .github/workflows/pages.yml
 ├── README.md
 └── output/
     ├── stopwatch.html
