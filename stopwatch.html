@@ -2,117 +2,139 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo+Mono:wght@300;400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Chivo+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
 <style>
-/* Layout: one instrument column — chronograph dial on top, digital readout, controls, lap log */
+/* Layout: two columns on desktop. A steel chronograph (working pushers, tachymeter bezel) on the left; slot-reel readout, controls and lap log on the right. One column on phones. */
 :root {
-  --bg: #eef0f3;
-  --face: #ffffff;
-  --ink: #161a22;
-  --muted: #6b7280;
-  --line: #d6dae2;
-  --accent: #2442c9;
-  --good: #1d7a4f;
-  --bad: #b8331f;
+  --bg: #e4e7eb;
+  --bg-glow: #f4f6f8;
+  --panel: #f6f7f9;
+  --ink: #12161c;
+  --muted: #64707e;
+  --line: #cdd3db;
+  --accent: #d24f17;
+  --on-accent: #ffffff;
+  --good: #1b7a52;
+  --bad: #bf3a2a;
+  --font-dial: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
   --font-num: "Chivo Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
   --font-ui: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #111318; --face: #1a1d24; --ink: #e8eaf0; --muted: #8b92a1;
-    --line: #2c313b; --accent: #8199ff; --good: #5cc795; --bad: #ff8a73;
+    --bg: #0b0e13; --bg-glow: #182130; --panel: #141a23; --ink: #e8ecf1; --muted: #8b95a4;
+    --line: #273040; --accent: #ff7a3d; --on-accent: #1a0d05; --good: #4fc58f; --bad: #ff806b;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #111318; --face: #1a1d24; --ink: #e8eaf0; --muted: #8b92a1;
-  --line: #2c313b; --accent: #8199ff; --good: #5cc795; --bad: #ff8a73;
+  --bg: #0b0e13; --bg-glow: #182130; --panel: #141a23; --ink: #e8ecf1; --muted: #8b95a4;
+  --line: #273040; --accent: #ff7a3d; --on-accent: #1a0d05; --good: #4fc58f; --bad: #ff806b;
   color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
+html, body { min-height: 100%; }
 body {
-  background: var(--bg);
+  background: radial-gradient(ellipse 70% 60% at 30% 35%, var(--bg-glow), transparent 70%), var(--bg);
+  background-color: var(--bg);
   color: var(--ink);
   font-family: var(--font-ui);
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 32px 48px;
+  padding-block: 28px 48px;
 }
-.wrap {
-  max-width: 460px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-}
-header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
-h1 { font-size: 1rem; font-weight: 600; margin: 0; letter-spacing: 0.02em; }
+.wrap { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+
+header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.brand { display: flex; align-items: baseline; gap: 12px; }
+h1 { margin: 0; font-size: 1.05rem; font-weight: 600; }
+.ref { font-family: var(--font-dial); font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; font-size: 0.8rem; color: var(--muted); }
 .status {
-  font-family: var(--font-num);
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--muted);
-  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-dial); font-weight: 600; font-size: 0.82rem;
+  text-transform: uppercase; letter-spacing: 0.16em; color: var(--muted);
+  display: inline-flex; align-items: center; gap: 8px;
 }
-.status::before {
-  content: ""; width: 7px; height: 7px; border-radius: 50%;
-  background: var(--line);
-}
+.status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
 .status[data-state="running"] { color: var(--accent); }
-.status[data-state="running"]::before { background: var(--accent); }
+.status[data-state="running"]::before { background: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent); }
 .status[data-state="paused"]::before { background: var(--muted); }
 
-.dial {
-  width: min(100%, 340px);
-  aspect-ratio: 1;
-  max-width: 100%;
-  margin: 0 auto;
-}
-.dial svg { width: 100%; height: 100%; display: block; overflow: visible; }
-.dial .rim { fill: var(--face); stroke: var(--line); stroke-width: 1; }
-.dial .tick { stroke: var(--muted); stroke-width: 1; }
-.dial .tick.major { stroke: var(--ink); stroke-width: 2; }
-.dial .num { fill: var(--muted); font-family: var(--font-num); font-size: 11px; text-anchor: middle; dominant-baseline: central; }
-.dial .sub { fill: none; stroke: var(--line); stroke-width: 1; }
-.dial .subtick { stroke: var(--muted); stroke-width: 1; }
-.dial .sublabel { fill: var(--muted); font-family: var(--font-num); font-size: 7px; text-anchor: middle; letter-spacing: 0.1em; }
-.dial .hand { stroke: var(--accent); stroke-width: 2; stroke-linecap: round; }
-.dial .subhand { stroke: var(--ink); stroke-width: 1.5; stroke-linecap: round; }
-.dial .hub { fill: var(--accent); }
-.dial .hubdot { fill: var(--face); }
-.dial .subhub { fill: var(--ink); }
+.grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 48px; align-items: center; }
+@media (max-width: 820px) { .grid { grid-template-columns: minmax(0, 1fr); gap: 32px; } }
 
+/* ---------- watch ---------- */
+.watch { position: relative; width: min(100%, 480px); max-width: 100%; aspect-ratio: 1; margin: 0 auto; }
+.watch > * { position: absolute; }
+.watch svg { inset: 0; width: 100%; height: 100%; overflow: visible; }
+.case {
+  inset: 4.545%;
+  border-radius: 50%;
+  background: conic-gradient(from 20deg, #dfe3e8, #8a919b, #f3f5f8, #7a818b, #e6e9ed, #9aa1ab, #f0f2f5, #848b95, #dfe3e8);
+  box-shadow: 0 30px 50px -10px rgba(0, 0, 0, 0.45), 0 8px 16px rgba(0, 0, 0, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.5), inset 0 -6px 12px rgba(0, 0, 0, 0.25);
+}
+.dial {
+  inset: 15.4545%;
+  border-radius: 50%;
+  background:
+    conic-gradient(from 200deg, transparent 0deg, rgba(255,255,255,0.13) 35deg, transparent 80deg, transparent 180deg, rgba(255,255,255,0.09) 215deg, transparent 260deg),
+    repeating-conic-gradient(from 0deg, rgba(255,255,255,0.035) 0deg 0.6deg, rgba(0,0,0,0.05) 0.6deg 1.2deg),
+    radial-gradient(circle at 50% 50%, #234a7e 0%, #14305a 45%, #0a1a33 100%);
+  box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.65), inset 0 0 0 1px rgba(0, 0, 0, 0.6);
+}
+.glass {
+  inset: 13.4%;
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 55% 35% at 32% 18%, rgba(255,255,255,0.22), transparent 70%),
+    linear-gradient(140deg, rgba(255,255,255,0.08), transparent 38%, transparent 70%, rgba(255,255,255,0.05));
+}
+svg.front { pointer-events: none; }
+
+.t-dial { font-family: var(--font-dial); font-weight: 600; }
+.t-mono { font-family: var(--font-num); }
+
+.pusher { cursor: pointer; outline: none; }
+.pusher .cap { transition: transform 0.08s ease; }
+.pusher.pressed .cap { transform: translateY(6px); }
+.pusher:focus-visible .cap rect:first-child { stroke: var(--accent); stroke-width: 2.5; }
+
+/* ---------- readout panel ---------- */
+.panel { display: flex; flex-direction: column; gap: 26px; min-width: 0; }
+.eyebrow {
+  font-family: var(--font-dial); font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.18em; font-size: 0.78rem; color: var(--muted); margin: 0 0 10px;
+}
 .readout {
   font-family: var(--font-num);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  font-size: clamp(2.2rem, 11vw, 3.4rem);
+  font-size: clamp(2.3rem, 9vw, 3.6rem);
   display: flex;
-  justify-content: center;
   align-items: center;
   gap: 0.07em;
   line-height: 1.2;
 }
 .reel {
   position: relative;
-  width: 0.68em;
+  width: 0.7em;
   height: 1.2em;
   overflow: hidden;
-  background: var(--face);
+  background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 0.14em;
+  border-radius: 0.12em;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 .reel::after {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(var(--face) 0%, transparent 30%, transparent 70%, var(--face) 100%);
-  opacity: 0.8;
+  background: linear-gradient(var(--panel) 0%, transparent 30%, transparent 70%, var(--panel) 100%);
+  opacity: 0.85;
 }
-.reel.cs { color: var(--muted); }
+.reel.cs { color: var(--accent); }
 .strip {
   display: flex;
   flex-direction: column;
@@ -123,50 +145,48 @@ h1 { font-size: 1rem; font-weight: 600; margin: 0; letter-spacing: 0.02em; }
 .strip span { height: 1.2em; line-height: 1.2em; text-align: center; }
 .sep { color: var(--muted); width: 0.4em; text-align: center; }
 .readout-sub {
-  margin-top: 10px;
-  text-align: center;
+  margin-top: 12px;
   font-family: var(--font-num);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
+.readout-sub b { color: var(--ink); font-weight: 600; }
 
 .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 button {
-  font: 500 1rem var(--font-ui);
-  padding: 14px 16px;
-  border-radius: 999px;
+  font: 600 1rem var(--font-ui);
+  padding: 15px 16px;
+  border-radius: 12px;
   border: 1px solid var(--line);
-  background: var(--face);
+  background: var(--panel);
   color: var(--ink);
   cursor: pointer;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  transition: transform 0.08s ease, background 0.15s ease;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: transform 0.08s ease, filter 0.15s ease;
 }
-button:active { transform: scale(0.97); }
+button:hover:not(:disabled) { filter: brightness(1.04); }
+button:active:not(:disabled) { transform: scale(0.97); }
 button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 button:disabled { opacity: 0.4; cursor: default; }
-button.primary { background: var(--accent); border-color: var(--accent); color: var(--face); }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 kbd {
-  font-family: var(--font-num);
-  font-size: 0.68rem;
-  padding: 1px 5px;
-  border-radius: 4px;
-  border: 1px solid currentColor;
-  opacity: 0.55;
+  font-family: var(--font-num); font-size: 0.68rem;
+  padding: 1px 5px; border-radius: 4px; border: 1px solid currentColor; opacity: 0.6;
 }
 
 .laps h2 {
-  font-size: 0.72rem; font-weight: 600; margin: 0 0 8px;
-  text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted);
+  font-family: var(--font-dial); font-weight: 600; font-size: 0.78rem; margin: 0 0 8px;
+  text-transform: uppercase; letter-spacing: 0.18em; color: var(--muted);
   display: flex; justify-content: space-between;
 }
-.laps ol { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.laps ol { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); max-height: 300px; overflow-y: auto; }
 .laps li {
+  position: relative;
   display: grid;
-  grid-template-columns: 3.5rem 1fr 1fr;
+  grid-template-columns: 3rem 1fr 1fr;
   gap: 8px;
-  padding: 11px 2px;
+  padding: 11px 2px 13px;
   border-bottom: 1px solid var(--line);
   font-family: var(--font-num);
   font-variant-numeric: tabular-nums;
@@ -175,55 +195,112 @@ kbd {
 .laps li .n { color: var(--muted); }
 .laps li .split, .laps li .total { text-align: right; }
 .laps li .total { color: var(--muted); }
+.laps li .bar {
+  position: absolute; left: 0; bottom: 4px; height: 3px; border-radius: 2px;
+  background: var(--line);
+}
 .laps li.current .split { color: var(--accent); }
+.laps li.current .bar { background: var(--accent); opacity: 0.5; }
 .laps li.best .split { color: var(--good); }
+.laps li.best .bar { background: var(--good); }
 .laps li.worst .split { color: var(--bad); }
-.laps li .tag { font-family: var(--font-ui); font-size: 0.7rem; margin-left: 6px; }
-.empty { color: var(--muted); font-size: 0.88rem; padding: 14px 2px; border-top: 1px solid var(--line); margin: 0; }
-.hint { color: var(--muted); font-size: 0.78rem; text-align: center; margin: 0; }
+.laps li.worst .bar { background: var(--bad); }
+.laps li .tag { font-family: var(--font-ui); font-size: 0.7rem; margin-right: 6px; }
+.empty { color: var(--muted); font-size: 0.88rem; line-height: 1.6; padding: 14px 2px; border-top: 1px solid var(--line); margin: 0; }
+.hint { color: var(--muted); font-size: 0.8rem; line-height: 1.7; margin: 0; }
 
 @media (prefers-reduced-motion: reduce) {
-  button { transition: none; }
-  .strip, .reel.fast .strip { transition: none; }
+  button, .pusher .cap, .strip, .reel.fast .strip { transition: none; }
 }
 </style>
 
 <div class="wrap">
   <header>
-    <h1>스탑워치</h1>
-    <span class="status" id="status" data-state="idle">대기</span>
+    <div class="brand">
+      <h1>크로노 스탑워치</h1>
+      <span class="ref">Ref. CH-1/5</span>
+    </div>
+    <span class="status" id="status" data-state="idle">Ready</span>
   </header>
 
-  <div class="dial" aria-hidden="true">
-    <svg viewBox="0 0 300 300" id="dial">
-      <circle class="rim" cx="150" cy="150" r="146"></circle>
-      <g id="ticks"></g>
-      <g id="subdial"></g>
-      <line class="subhand" id="minHand" x1="150" y1="205" x2="150" y2="177"></line>
-      <circle class="subhub" cx="150" cy="205" r="2.5"></circle>
-      <line class="hand" id="secHand" x1="150" y1="170" x2="150" y2="20"></line>
-      <circle class="hub" cx="150" cy="150" r="5"></circle>
-      <circle class="hubdot" cx="150" cy="150" r="1.8"></circle>
-    </svg>
+  <div class="grid">
+    <div class="watch" id="watch">
+      <svg class="back" viewBox="-20 -20 440 440" aria-hidden="false">
+        <defs>
+          <linearGradient id="steelH" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#7d848e"></stop>
+            <stop offset="0.45" stop-color="#f1f3f6"></stop>
+            <stop offset="1" stop-color="#8e959f"></stop>
+          </linearGradient>
+        </defs>
+        <!-- crown at 3 o'clock -->
+        <g transform="rotate(90 200 200)">
+          <rect x="192" y="-10" width="16" height="14" fill="url(#steelH)"></rect>
+          <rect x="182" y="-26" width="36" height="20" rx="4" fill="url(#steelH)" stroke="#5f666f" stroke-width="1"></rect>
+          <g stroke="#6b727c" stroke-width="1.2">
+            <line x1="187" y1="-24" x2="187" y2="-8"></line><line x1="192" y1="-24" x2="192" y2="-8"></line>
+            <line x1="197" y1="-24" x2="197" y2="-8"></line><line x1="202" y1="-24" x2="202" y2="-8"></line>
+            <line x1="207" y1="-24" x2="207" y2="-8"></line><line x1="212" y1="-24" x2="212" y2="-8"></line>
+          </g>
+        </g>
+        <!-- pushers: 2 o'clock start/stop, 4 o'clock lap/reset -->
+        <g class="pusher" id="pTop" role="button" tabindex="0" aria-label="시작 또는 정지" transform="rotate(58 200 200)">
+          <g class="cap">
+            <rect x="189" y="-22" width="22" height="16" rx="3" fill="url(#steelH)" stroke="#5f666f" stroke-width="1"></rect>
+            <rect x="194" y="-8" width="12" height="14" fill="url(#steelH)"></rect>
+          </g>
+        </g>
+        <g class="pusher" id="pBottom" role="button" tabindex="0" aria-label="랩 또는 초기화" transform="rotate(122 200 200)">
+          <g class="cap">
+            <rect x="189" y="-22" width="22" height="16" rx="3" fill="url(#steelH)" stroke="#5f666f" stroke-width="1"></rect>
+            <rect x="194" y="-8" width="12" height="14" fill="url(#steelH)"></rect>
+          </g>
+        </g>
+      </svg>
+      <div class="case"></div>
+      <div class="dial"></div>
+      <svg class="front" id="front" viewBox="-20 -20 440 440" aria-hidden="true">
+        <defs>
+          <linearGradient id="steelV" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#9ea5ae"></stop>
+            <stop offset="0.5" stop-color="#ffffff"></stop>
+            <stop offset="1" stop-color="#8d949e"></stop>
+          </linearGradient>
+          <radialGradient id="subG" cx="50%" cy="45%" r="60%">
+            <stop offset="0" stop-color="#0d1f3b"></stop>
+            <stop offset="1" stop-color="#071225"></stop>
+          </radialGradient>
+          <filter id="hs" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="2" dy="3" stdDeviation="2" flood-color="#000" flood-opacity="0.5"></feDropShadow>
+          </filter>
+        </defs>
+        <g id="static"></g>
+        <g id="hands"></g>
+      </svg>
+      <div class="glass"></div>
+    </div>
+
+    <div class="panel">
+      <div>
+        <p class="eyebrow">Elapsed</p>
+        <div class="readout" id="readout" role="timer" aria-live="off"></div>
+        <div class="readout-sub" id="lapReadout"></div>
+      </div>
+
+      <div class="controls">
+        <button id="secondary" type="button" disabled>랩 <kbd>L</kbd></button>
+        <button id="primary" class="primary" type="button">시작 <kbd>Space</kbd></button>
+      </div>
+
+      <section class="laps">
+        <h2><span>Lap log</span><span id="lapCount"></span></h2>
+        <p class="empty" id="empty">측정 중에 랩을 누르면 구간 기록이 쌓입니다. 가장 빠른 구간은 초록, 가장 느린 구간은 빨강으로 표시되고, 막대 길이로 구간 차이를 비교할 수 있습니다.</p>
+        <ol id="lapList"></ol>
+      </section>
+
+      <p class="hint">시계 오른쪽 위 푸셔는 시작·정지, 오른쪽 아래 푸셔는 랩·초기화입니다. 키보드는 Space(시작·정지), L(랩), R(초기화). 시침과 분침은 지금 시각을 가리킵니다.</p>
+    </div>
   </div>
-
-  <div>
-    <div class="readout" id="readout" role="timer" aria-live="off"></div>
-    <div class="readout-sub" id="lapReadout">랩 1 · 00:00.00</div>
-  </div>
-
-  <div class="controls">
-    <button id="secondary" type="button" disabled>랩 <kbd>L</kbd></button>
-    <button id="primary" class="primary" type="button">시작 <kbd>Space</kbd></button>
-  </div>
-
-  <section class="laps">
-    <h2><span>랩 기록</span><span id="lapCount"></span></h2>
-    <p class="empty" id="empty">측정 중에 랩 버튼을 누르면 구간 기록이 여기에 쌓입니다. 가장 빠른 구간은 초록, 가장 느린 구간은 빨강으로 표시됩니다.</p>
-    <ol id="lapList"></ol>
-  </section>
-
-  <p class="hint">Space 시작·정지 · L 랩 · R 초기화</p>
 </div>
 
 <script>
@@ -231,19 +308,25 @@ kbd {
   const KEY = "chrono-stopwatch-v1";
   const $ = (id) => document.getElementById(id);
   const NS = "http://www.w3.org/2000/svg";
+  const mk = (tag, attrs, parent) => {
+    const el = document.createElementNS(NS, tag);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(el);
+    return el;
+  };
+  const C = 200;
+  const polar = (r, deg) => {
+    const a = (deg * Math.PI) / 180;
+    return [C + Math.sin(a) * r, C - Math.cos(a) * r];
+  };
 
-  // state: accumulated ms while paused, start epoch while running, lap totals (ms)
+  // ---------- state ----------
   let acc = 0, startedAt = null, laps = [];
-
   try {
     const s = JSON.parse(localStorage.getItem(KEY) || "null");
     if (s) { acc = s.acc || 0; startedAt = s.startedAt || null; laps = Array.isArray(s.laps) ? s.laps : []; }
   } catch (e) {}
-
-  const save = () => {
-    try { localStorage.setItem(KEY, JSON.stringify({ acc, startedAt, laps })); } catch (e) {}
-  };
-
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ acc, startedAt, laps })); } catch (e) {} };
   const elapsed = () => acc + (startedAt ? Date.now() - startedAt : 0);
   const running = () => startedAt !== null;
 
@@ -253,62 +336,117 @@ kbd {
     const m = Math.floor(ms / 60000) % 60;
     const h = Math.floor(ms / 3600000);
     const p = (n) => String(n).padStart(2, "0");
-    return { main: (h ? h + ":" : "") + p(m) + ":" + p(s), cs: "." + p(cs) };
+    return (h ? h + ":" : "") + p(m) + ":" + p(s) + "." + p(cs);
   };
-  const fmtStr = (ms) => { const f = fmt(ms); return f.main + f.cs; };
 
-  // build dial
-  const ticks = $("ticks");
+  // ---------- dial ----------
+  const st = $("static");
+  const WHITE = "#e9edf2";
+
+  // tachymeter bezel insert
+  mk("circle", { cx: C, cy: C, r: 176, fill: "none", stroke: "#101318", "stroke-width": 30 }, st);
+  mk("circle", { cx: C, cy: C, r: 161.5, fill: "none", stroke: "rgba(255,255,255,0.18)", "stroke-width": 0.8 }, st);
+  mk("circle", { cx: C, cy: C, r: 190.5, fill: "none", stroke: "rgba(255,255,255,0.12)", "stroke-width": 0.8 }, st);
+  [500, 400, 300, 250, 200, 180, 160, 150, 140, 130, 120, 110, 100, 90, 80, 75, 70, 65, 60].forEach((v) => {
+    const deg = ((3600 / v) / 60) * 360 % 360;
+    const [x1, y1] = polar(162, deg), [x2, y2] = polar(168, deg);
+    mk("line", { x1, y1, x2, y2, stroke: WHITE, "stroke-width": 1 }, st);
+    if ([160, 140, 75, 65].includes(v)) return;
+    const [tx, ty] = polar(178.5, deg);
+    const rot = deg > 90 && deg < 270 ? deg + 180 : deg;
+    const t = mk("text", { x: tx, y: ty, class: "t-dial", "font-size": 10, fill: WHITE, "text-anchor": "middle", "dominant-baseline": "central", transform: "rotate(" + rot + " " + tx + " " + ty + ")" }, st);
+    t.textContent = v;
+  });
+  const [lx, ly] = polar(178.5, 302);
+  const tl = mk("text", { x: lx, y: ly, class: "t-dial", "font-size": 7.5, "letter-spacing": 1.5, fill: "rgba(233,237,242,0.7)", "text-anchor": "middle", "dominant-baseline": "central", transform: "rotate(302 " + lx + " " + ly + ")" }, st);
+  tl.textContent = "TACHYMETRE";
+
+  // 1/5-second track
   for (let i = 0; i < 300; i++) {
-    // fifths of a second: 300 ticks around the dial
-    const a = (i / 300) * Math.PI * 2;
-    const major = i % 25 === 0, mid = i % 5 === 0;
-    if (!mid && !major) continue;
-    const r1 = 140, r2 = major ? 126 : 133;
-    const l = document.createElementNS(NS, "line");
-    l.setAttribute("x1", 150 + Math.sin(a) * r1);
-    l.setAttribute("y1", 150 - Math.cos(a) * r1);
-    l.setAttribute("x2", 150 + Math.sin(a) * r2);
-    l.setAttribute("y2", 150 - Math.cos(a) * r2);
-    l.setAttribute("class", major ? "tick major" : "tick");
-    ticks.appendChild(l);
-    if (major) {
-      const t = document.createElementNS(NS, "text");
-      const sec = (i / 5) || 60;
-      t.setAttribute("x", 150 + Math.sin(a) * 113);
-      t.setAttribute("y", 150 - Math.cos(a) * 113);
-      t.setAttribute("class", "num");
-      t.textContent = sec;
-      ticks.appendChild(t);
+    const deg = i * 1.2;
+    const sec = i % 5 === 0, five = i % 25 === 0;
+    const len = five ? 10 : sec ? 6 : 3;
+    const [x1, y1] = polar(150, deg), [x2, y2] = polar(150 - len, deg);
+    mk("line", { x1, y1, x2, y2, stroke: WHITE, "stroke-width": five ? 1.6 : sec ? 1 : 0.6, opacity: five ? 0.95 : sec ? 0.8 : 0.45 }, st);
+  }
+  // small seconds numerals between the hour markers
+  for (let s = 5; s <= 60; s += 5) {
+    const [x, y] = polar(132, (s / 60) * 360);
+    if (s % 15 === 0) continue;
+    const t = mk("text", { x, y, class: "t-dial", "font-size": 9, fill: "rgba(233,237,242,0.75)", "text-anchor": "middle", "dominant-baseline": "central" }, st);
+    t.textContent = s;
+  }
+
+  // applied baton indices with lume
+  for (let h = 0; h < 12; h++) {
+    const g = mk("g", { transform: "rotate(" + h * 30 + " " + C + " " + C + ")", filter: "url(#hs)" }, st);
+    if (h === 3 || h === 9) continue;
+    const xs = h === 0 ? [193, 202] : [197];
+    const w = h === 0 ? 5 : 6;
+    xs.forEach((x) => {
+      mk("rect", { x, y: 62, width: w, height: 24, rx: 1, fill: "url(#steelV)" }, g);
+      mk("rect", { x: x + 1.5, y: 64, width: w - 3, height: 18, fill: "#efe7cc" }, g);
+    });
+  }
+
+  // brand
+  const b1 = mk("text", { x: C, y: 116, class: "t-dial", "font-size": 17, "letter-spacing": 5, fill: WHITE, "text-anchor": "middle" }, st);
+  b1.textContent = "CHRONO";
+  const b2 = mk("text", { x: C, y: 128, class: "t-dial", "font-size": 6.5, "letter-spacing": 2, fill: "rgba(233,237,242,0.6)", "text-anchor": "middle" }, st);
+  b2.textContent = "1/5 SEC · TACHYMETRE";
+
+  // subdials: 30-minute counter at 9, 12-hour counter at 3
+  const hands = $("hands");
+  const subdial = (cx, n, labels, name) => {
+    const g = mk("g", {}, st);
+    mk("circle", { cx, cy: C, r: 37, fill: "url(#subG)", stroke: "rgba(255,255,255,0.28)", "stroke-width": 1 }, g);
+    for (let r = 5; r < 36; r += 2.6) mk("circle", { cx, cy: C, r, fill: "none", stroke: "rgba(255,255,255,0.05)", "stroke-width": 0.8 }, g);
+    const step = n / labels.length;
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2;
+      const major = i % step === 0;
+      const r2 = major ? 28 : 32;
+      mk("line", { x1: cx + Math.sin(a) * 35, y1: C - Math.cos(a) * 35, x2: cx + Math.sin(a) * r2, y2: C - Math.cos(a) * r2, stroke: WHITE, "stroke-width": major ? 1.2 : 0.7, opacity: 0.85 }, g);
     }
-  }
-  // 30-minute counter subdial
-  const sub = $("subdial");
-  const c = document.createElementNS(NS, "circle");
-  c.setAttribute("cx", 150); c.setAttribute("cy", 205); c.setAttribute("r", 34); c.setAttribute("class", "sub");
-  sub.appendChild(c);
-  for (let i = 0; i < 30; i++) {
-    const a = (i / 30) * Math.PI * 2;
-    const r2 = i % 5 === 0 ? 27 : 30;
-    const l = document.createElementNS(NS, "line");
-    l.setAttribute("x1", 150 + Math.sin(a) * 33);
-    l.setAttribute("y1", 205 - Math.cos(a) * 33);
-    l.setAttribute("x2", 150 + Math.sin(a) * r2);
-    l.setAttribute("y2", 205 - Math.cos(a) * r2);
-    l.setAttribute("class", "subtick");
-    sub.appendChild(l);
-  }
-  const lbl = document.createElementNS(NS, "text");
-  lbl.setAttribute("x", 150); lbl.setAttribute("y", 222); lbl.setAttribute("class", "sublabel");
-  lbl.textContent = "30 MIN";
-  sub.appendChild(lbl);
+    labels.forEach((lab, i) => {
+      const a = (i / labels.length) * Math.PI * 2;
+      const t = mk("text", { x: cx + Math.sin(a) * 21, y: C - Math.cos(a) * 21, class: "t-dial", "font-size": 8, fill: WHITE, "text-anchor": "middle", "dominant-baseline": "central" }, g);
+      t.textContent = lab;
+    });
+    const nm = mk("text", { x: cx, y: C + 12, class: "t-dial", "font-size": 5.5, "letter-spacing": 1.2, fill: "rgba(233,237,242,0.6)", "text-anchor": "middle" }, g);
+    nm.textContent = name;
+    const hg = mk("g", { transform: "translate(" + cx + " " + C + ")", filter: "url(#hs)" }, hands);
+    const rot = mk("g", {}, hg);
+    mk("path", { d: "M-1.8,7 L0,-31 L1.8,7 Z", fill: WHITE }, rot);
+    mk("circle", { r: 3, fill: "#c3c9d1" }, hg);
+    return rot;
+  };
+  const subMin = subdial(C - 74, 30, ["30", "10", "20"], "MIN");
+  const subHr = subdial(C + 74, 12, ["12", "3", "6", "9"], "HR");
 
-  const secHand = $("secHand"), minHand = $("minHand");
+  // lap window at 6
+  mk("rect", { x: 175, y: 258, width: 50, height: 19, rx: 2, fill: "#f1ece0", stroke: "url(#steelV)", "stroke-width": 2 }, st);
+  const lapWin = mk("text", { x: C, y: 268, class: "t-mono", "font-size": 10, "font-weight": 600, fill: "#15191f", "text-anchor": "middle", "dominant-baseline": "central" }, st);
 
-  // slot-style readout: each digit is a reel (0-9 plus a trailing 0 for the 9 -> 0 wrap)
+  // time-of-day hands + chrono seconds hand
+  const hourHand = mk("g", { filter: "url(#hs)" }, hands);
+  mk("path", { d: "M195.5,218 L195.5,124 L200,112 L204.5,124 L204.5,218 Z", fill: "url(#steelV)", stroke: "#6f7680", "stroke-width": 0.6 }, hourHand);
+  mk("rect", { x: 198, y: 126, width: 4, height: 64, fill: "#efe7cc" }, hourHand);
+  const minHand = mk("g", { filter: "url(#hs)" }, hands);
+  mk("path", { d: "M196.5,222 L196.5,76 L200,62 L203.5,76 L203.5,222 Z", fill: "url(#steelV)", stroke: "#6f7680", "stroke-width": 0.6 }, minHand);
+  mk("rect", { x: 198.6, y: 80, width: 2.8, height: 104, fill: "#efe7cc" }, minHand);
+  const chronoHand = mk("g", { filter: "url(#hs)" }, hands);
+  mk("line", { x1: C, y1: 242, x2: C, y2: 52, stroke: "#ff6a2b", "stroke-width": 1.8, "stroke-linecap": "round" }, chronoHand);
+  mk("circle", { cx: C, cy: 230, r: 6, fill: "none", stroke: "#ff6a2b", "stroke-width": 2 }, chronoHand);
+  mk("rect", { x: 198.6, y: 58, width: 2.8, height: 12, fill: "#efe7cc" }, chronoHand);
+  mk("circle", { cx: C, cy: C, r: 7, fill: "#ff6a2b" }, hands);
+  mk("circle", { cx: C, cy: C, r: 2.4, fill: "#d9dde3" }, hands);
+
+  const rotate = (el, deg, cx = C, cy = C) => el.setAttribute("transform", "rotate(" + deg + " " + cx + " " + cy + ")");
+
+  // ---------- slot-reel readout ----------
   const readoutEl = $("readout");
   let builtPattern = "", reels = [];
-
   const snap = (r) => {
     r.strip.style.transition = "none";
     r.row = 0;
@@ -364,37 +502,45 @@ kbd {
     reels.forEach((r, i) => setDigit(r, +digits[i], instant));
   };
 
+  // ---------- render ----------
   const renderTime = () => {
     const ms = elapsed();
-    const f = fmt(ms);
-    setReadout(f.main + f.cs);
+    setReadout(fmt(ms));
     const lastTotal = laps.length ? laps[laps.length - 1] : 0;
-    $("lapReadout").textContent = "랩 " + (laps.length + 1) + " · " + fmtStr(ms - lastTotal);
-    secHand.setAttribute("transform", "rotate(" + ((ms % 60000) / 60000) * 360 + " 150 150)");
-    minHand.setAttribute("transform", "rotate(" + ((ms % 1800000) / 1800000) * 360 + " 150 205)");
-    // live current-lap row
+    $("lapReadout").innerHTML = "LAP <b>" + String(laps.length + 1).padStart(2, "0") + "</b> · " + fmt(ms - lastTotal);
+    rotate(chronoHand, ((ms % 60000) / 60000) * 360);
+    rotate(subMin, ((ms % 1800000) / 1800000) * 360, 0, 0);
+    rotate(subHr, ((ms % 43200000) / 43200000) * 360, 0, 0);
+    lapWin.textContent = "LAP " + String(Math.min(laps.length, 99)).padStart(2, "0");
     const cur = document.querySelector("#lapList li.current");
     if (cur) {
-      cur.querySelector(".split").textContent = fmtStr(ms - lastTotal);
-      cur.querySelector(".total").textContent = fmtStr(ms);
+      cur.querySelector(".split").textContent = fmt(ms - lastTotal);
+      cur.querySelector(".total").textContent = fmt(ms);
     }
+  };
+  const renderClock = () => {
+    const d = new Date();
+    const sec = d.getSeconds() + d.getMilliseconds() / 1000;
+    const min = d.getMinutes() + sec / 60;
+    rotate(minHand, min * 6);
+    rotate(hourHand, ((d.getHours() % 12) + min / 60) * 30);
   };
 
   const renderControls = () => {
     const ms = elapsed();
-    const p = $("primary"), s = $("secondary"), st = $("status");
+    const p = $("primary"), s = $("secondary"), stt = $("status");
     if (running()) {
       p.innerHTML = "정지 <kbd>Space</kbd>";
       s.innerHTML = "랩 <kbd>L</kbd>"; s.disabled = false;
-      st.dataset.state = "running"; st.textContent = "측정 중";
+      stt.dataset.state = "running"; stt.textContent = "Running";
     } else if (ms > 0) {
       p.innerHTML = "계속 <kbd>Space</kbd>";
       s.innerHTML = "초기화 <kbd>R</kbd>"; s.disabled = false;
-      st.dataset.state = "paused"; st.textContent = "일시정지";
+      stt.dataset.state = "paused"; stt.textContent = "Paused";
     } else {
       p.innerHTML = "시작 <kbd>Space</kbd>";
       s.innerHTML = "랩 <kbd>L</kbd>"; s.disabled = true;
-      st.dataset.state = "idle"; st.textContent = "대기";
+      stt.dataset.state = "idle"; stt.textContent = "Ready";
     }
   };
 
@@ -402,13 +548,13 @@ kbd {
     const list = $("lapList");
     list.innerHTML = "";
     const splits = laps.map((t, i) => t - (i ? laps[i - 1] : 0));
+    const max = splits.length ? Math.max(...splits) : 1;
     let best = -1, worst = -1;
     if (splits.length >= 2) {
       best = splits.indexOf(Math.min(...splits));
       worst = splits.indexOf(Math.max(...splits));
     }
-    const ms = elapsed();
-    if (ms > 0 && laps.length) {
+    if (elapsed() > 0 && laps.length) {
       const li = document.createElement("li");
       li.className = "current";
       li.innerHTML = '<span class="n">' + String(laps.length + 1).padStart(2, "0") + '</span><span class="split"></span><span class="total"></span>';
@@ -419,21 +565,21 @@ kbd {
       let tag = "";
       if (i === best) { li.className = "best"; tag = '<span class="tag">최고</span>'; }
       else if (i === worst) { li.className = "worst"; tag = '<span class="tag">최저</span>'; }
-      li.innerHTML = '<span class="n">' + String(i + 1).padStart(2, "0") + '</span><span class="split">' + tag + fmtStr(splits[i]) + '</span><span class="total">' + fmtStr(laps[i]) + "</span>";
+      li.innerHTML = '<span class="n">' + String(i + 1).padStart(2, "0") + '</span><span class="split">' + tag + fmt(splits[i]) + '</span><span class="total">' + fmt(laps[i]) + '</span><span class="bar" style="width:' + ((splits[i] / max) * 100).toFixed(1) + '%"></span>';
       list.appendChild(li);
     }
     $("empty").hidden = laps.length > 0;
-    $("lapCount").textContent = laps.length ? laps.length + "개" : "";
+    $("lapCount").textContent = laps.length ? laps.length + " laps" : "";
   };
 
   const renderAll = () => { renderControls(); renderLaps(); renderTime(); };
 
-  let raf = null;
-  const loop = () => { renderTime(); raf = running() ? requestAnimationFrame(loop) : null; };
+  const frame = () => { renderTime(); renderClock(); requestAnimationFrame(frame); };
 
+  // ---------- actions ----------
   const toggle = () => {
     if (running()) { acc += Date.now() - startedAt; startedAt = null; }
-    else { startedAt = Date.now(); if (!raf) raf = requestAnimationFrame(loop); }
+    else startedAt = Date.now();
     save(); renderAll();
   };
   const lap = () => {
@@ -444,18 +590,37 @@ kbd {
     if (running()) return;
     acc = 0; laps = []; save(); renderAll();
   };
+  const second = () => (running() ? lap() : reset());
 
-  $("primary").addEventListener("click", toggle);
-  $("secondary").addEventListener("click", () => (running() ? lap() : reset()));
+  const flash = (el) => {
+    el.classList.add("pressed");
+    setTimeout(() => el.classList.remove("pressed"), 140);
+  };
+  const pusher = (el, fn) => {
+    el.addEventListener("pointerdown", (e) => { e.preventDefault(); el.classList.add("pressed"); fn(); });
+    ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => el.addEventListener(ev, () => el.classList.remove("pressed")));
+    el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.repeat) { e.preventDefault(); flash(el); fn(); }
+    });
+  };
+  pusher($("pTop"), toggle);
+  pusher($("pBottom"), second);
+
+  $("primary").addEventListener("click", () => { flash($("pTop")); toggle(); });
+  $("secondary").addEventListener("click", () => { flash($("pBottom")); second(); });
 
   document.addEventListener("keydown", (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
-    if (e.code === "Space") { e.preventDefault(); toggle(); }
-    else if (e.code === "KeyL") lap();
-    else if (e.code === "KeyR") reset();
+    if (e.target.closest && e.target.closest("button")) {
+      if (e.code === "Space") return; // let the focused button handle it
+    }
+    if (e.code === "Space") { e.preventDefault(); flash($("pTop")); toggle(); }
+    else if (e.code === "KeyL" && running()) { flash($("pBottom")); lap(); }
+    else if (e.code === "KeyR" && !running()) { flash($("pBottom")); reset(); }
   });
 
   renderAll();
-  if (running()) raf = requestAnimationFrame(loop);
+  renderClock();
+  requestAnimationFrame(frame);
 })();
 </script>
