@@ -1,6 +1,12 @@
 # kearney-ai-education
 
-Claude Code로 만든 HTML 스탑워치 결과물입니다. `output/` 폴더의 HTML 파일을 브라우저로 열면 바로 동작합니다.
+Claude Code로 만든 HTML 스탑워치 결과물입니다.
+
+## 실행 방법
+
+`output/` 폴더의 HTML 파일을 브라우저로 열면 바로 동작합니다.
+
+## 폴더 구조
 
 ```
 .
@@ -9,6 +15,8 @@ Claude Code로 만든 HTML 스탑워치 결과물입니다. `output/` 폴더의 
     ├── stopwatch.html
     └── digital-stopwatch.html
 ```
+
+## 결과물
 
 | 파일 | 이름 | 주요 기능 |
 | --- | --- | --- |
