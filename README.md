@@ -1,4 +1,4 @@
-# kearney-ai-education
+# stopwatch
 
 Claude Code로 만든 HTML 스탑워치 결과물입니다.
 
